@@ -41,7 +41,7 @@ w = linspace(-10, 10, 100);
 grid = k * w .';
 
 % Use map to compute the error function
-
+% store values in a 3 dimensional array, where dimenions are k, w, error
 
 % Use 2D map / contour to visualise the amplitude of error
 % Highlight k/w values which minimise the errorFunction, can be grabbed
