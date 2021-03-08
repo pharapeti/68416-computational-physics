@@ -26,6 +26,7 @@ wOptimum = p(2);
 
 yFitted = modelFunction(p);
 
+figure(1);
 plot(x, y, '.', x, yFitted, '-');
 title('Non-linear regression');
 subtitle({ "where k = " + kOptimum, "and w = " + wOptimum});
@@ -35,14 +36,37 @@ ylabel('y');
 
 % Generate domain for k and w values
 k = linspace(-10, 10, 100);
-w = linspace(-10, 10, 100);
+w = linspace(-10, 10, 100).';
+[kGrid, wGrid] = meshgrid(k, w);
 
 % Generate meshgrid or broadcast to generate map of k and w values
-grid = k * w .';
+grid = kGrid .* wGrid;
 
 % Use map to compute the error function
-% store values in a 3 dimensional array, where dimenions are k, w, error
+% Store values in a 3 dimensional array, where dimenions are k, w, error
+errorArray = nan([length(k), length(w)]);
+
+% Not producing the correct result, we should expect the minimum point
+% to be at kOptimum and wOptimum
+for i = 1:length(k)
+    for j = 1:length(w)
+        errorArray(i, j) = errorFunction([k(i), w(j)]);
+    end
+end
 
 % Use 2D map / contour to visualise the amplitude of error
-% Highlight k/w values which minimise the errorFunction, can be grabbed
-% from above
+figure(2);
+imagesc(k, w, errorArray);
+
+% Decorate Figure #1
+colorbar
+axis('image')
+title('Error between model and dataset')
+% subtitle(sprintf('%0.4f*exp(-%0.4f*x)', kOptimum, wOptimum));
+xlabel('k')
+ylabel('w')
+
+% Highlight k/w values which minimise the errorFunction
+lowestError = errorFunction([kOptimum, wOptimum]);
+
+% Add lowestError to the 2D plot
