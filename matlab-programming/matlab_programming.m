@@ -34,37 +34,33 @@ legend('y', sprintf('%0.4f*exp(-%0.4f*x)', kOptimum, wOptimum));
 xlabel('x');
 ylabel('y');
 
+%% Part Two
 % Generate domain for k and w values
 k = linspace(-10, 10, 100);
-w = linspace(-10, 10, 100).';
-[kGrid, wGrid] = meshgrid(k, w);
+w = linspace(-10, 10, 100);
 
-% Generate meshgrid or broadcast to generate map of k and w values
-grid = kGrid .* wGrid;
-
-% Use map to compute the error function
-% Store values in a 3 dimensional array, where dimenions are k, w, error
+% Generate error over the k, w domain
 errorArray = nan([length(k), length(w)]);
-
-% Not producing the correct result, we should expect the minimum point
-% to be at kOptimum and wOptimum
 for i = 1:length(k)
     for j = 1:length(w)
-        errorArray(i, j) = errorFunction([k(i), w(j)]);
+        kVal = k(:, i);
+        wVal = w(:, j);
+
+        errorArray(i, j) = errorFunction([kVal, wVal]);
     end
 end
 
 % Use 2D map / contour to visualise the amplitude of error
 figure(2);
-imagesc(k, w, errorArray);
+imagesc(w, k, errorArray);
 
 % Decorate Figure #1
 colorbar
 axis('image')
 title('Error between model and dataset')
 % subtitle(sprintf('%0.4f*exp(-%0.4f*x)', kOptimum, wOptimum));
-xlabel('k')
-ylabel('w')
+xlabel('w')
+ylabel('k')
 
 % Highlight k/w values which minimise the errorFunction
 lowestError = errorFunction([kOptimum, wOptimum]);
