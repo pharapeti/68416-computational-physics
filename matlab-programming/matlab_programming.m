@@ -24,8 +24,10 @@ p = fminsearch(errorFunction, [1 2]);
 kOptimum = p(1);
 wOptimum = p(2);
 
+% Generate fitted function
 yFitted = modelFunction(p);
 
+% Plot and decorate the actual dataset, and the modelled function
 figure(1);
 plot(x, y, '.', x, yFitted, '-');
 title('Non-linear regression');
@@ -58,7 +60,7 @@ imagesc(w, k, errorArray);
 colorbar
 axis('image')
 title('Error between model and dataset')
-% subtitle(sprintf('%0.4f*exp(-%0.4f*x)', kOptimum, wOptimum));
+subtitle('Smaller the error, the more accurate');
 xlabel('w')
 ylabel('k')
 
@@ -66,3 +68,6 @@ ylabel('k')
 lowestError = errorFunction([kOptimum, wOptimum]);
 
 % Add lowestError to the 2D plot
+
+% Ask tutor if we need to indicate all four minimums on the plot
+% using global minimum
