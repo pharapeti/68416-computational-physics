@@ -31,7 +31,6 @@ yFitted = modelFunction(p);
 figure(1);
 plot(x, y, '.', x, yFitted, '-');
 title('Non-linear regression');
-subtitle({ "where k = " + kOptimum, "and w = " + wOptimum});
 legend('y', sprintf('%0.4f*exp(-%0.4f*x)', kOptimum, wOptimum));
 xlabel('x');
 ylabel('y');
@@ -55,19 +54,19 @@ end
 % Use 2D map / contour to visualise the amplitude of error
 figure(2);
 imagesc(w, k, errorArray);
+hold on;
+
+% Highlight k/w value which minimises the error function
+lowestError = errorFunction([kOptimum, wOptimum]);
+
+% Add lowestError to the 2D plot
+plot3(wOptimum, kOptimum, 0, '-s', 'MarkerSize', 10,...
+    'MarkerEdgeColor', 'red');
 
 % Decorate Figure #1
 colorbar
 axis('image')
 title('Error between model and dataset')
-subtitle('Smaller the error, the more accurate');
+subtitle('Smaller the error, the more accurate the fit');
 xlabel('w')
 ylabel('k')
-
-% Highlight k/w values which minimise the errorFunction
-lowestError = errorFunction([kOptimum, wOptimum]);
-
-% Add lowestError to the 2D plot
-
-% Ask tutor if we need to indicate all four minimums on the plot
-% using global minimum
