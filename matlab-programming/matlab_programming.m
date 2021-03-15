@@ -1,6 +1,12 @@
-clc;
-clear;
-close all;
+%% Matlab Programming Assignment (By Patrice Harapeti)
+
+%% Background
+% Linear Regression and Minimisation.
+
+%% Setup
+clc; clear; close all;
+
+%% Part One : Linear Regression
 
 % Define given dataset
 x = linspace(-1, 1, 1e3) * 3;
@@ -31,16 +37,17 @@ yFitted = modelFunction(p);
 figure(1);
 plot(x, y, '.', x, yFitted, '-');
 title('Non-linear regression');
-legend('y', sprintf('%0.4f*exp(-%0.4f*x)', kOptimum, wOptimum));
+legend('data', sprintf('%0.4f*exp(-%0.4f*x)', kOptimum, wOptimum));
 xlabel('x');
 ylabel('y');
 
-%% Part Two
+%% Part Two : Minimisation
+
 % Generate domain for k and w values
 k = linspace(-10, 10, 100);
 w = linspace(-10, 10, 100);
 
-% Generate error over the k, w domain
+% Calculate error over the k, w domain
 errorArray = nan([length(k), length(w)]);
 for i = 1:length(k)
     for j = 1:length(w)
@@ -51,22 +58,21 @@ for i = 1:length(k)
     end
 end
 
-% Use 2D map / contour to visualise the amplitude of error
+% Use 2D plot to visualise the magnitude of the error and identify minima
+% Four minima found based on symmetry of dataset
 figure(2);
 imagesc(w, k, errorArray);
 hold on;
 
-% Highlight k/w value which minimises the error function
-lowestError = errorFunction([kOptimum, wOptimum]);
-
-% Add lowestError to the 2D plot
+% Plot minima of error function onto the 2D plot
 plot3(wOptimum, kOptimum, 0, '-s', 'MarkerSize', 10,...
     'MarkerEdgeColor', 'red');
+hold off;
 
-% Decorate Figure #1
-colorbar
-axis('image')
-title('Error between model and dataset')
+% Decorate 2D plot
+colorbar;
+axis('image');
+title('Error between model and dataset');
 subtitle('Smaller the error, the more accurate the fit');
-xlabel('w')
-ylabel('k')
+xlabel('w');
+ylabel('k');

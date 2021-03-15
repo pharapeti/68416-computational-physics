@@ -1,0 +1,218 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Matlab Programming Assignment (By Patrice Harapeti)</title><meta name="generator" content="MATLAB 9.9"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2021-03-15"><meta name="DC.source" content="matlab_programming.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; }
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+span.typesection { color:#A0522D }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>Matlab Programming Assignment (By Patrice Harapeti)</h1><!--introduction--><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Background</a></li><li><a href="#2">Setup</a></li><li><a href="#3">Part One : Linear Regression</a></li><li><a href="#4">Part Two : Minimisation</a></li></ul></div><h2 id="1">Background</h2><p>Linear Regression and Minimisation.</p><h2 id="2">Setup</h2><pre class="codeinput">clc; clear; close <span class="string">all</span>;
+</pre><h2 id="3">Part One : Linear Regression</h2><pre class="codeinput"><span class="comment">% Define given dataset</span>
+x = linspace(-1, 1, 1e3) * 3;
+y = cos(x * 5 * (1+rand(1))) .* exp(-(x * (1+rand(1))) .^ 2) <span class="keyword">...</span>
+    + randn(size(x)) * 0.05;
+
+<span class="comment">% Define a lambda for model function which behaves like the actual data</span>
+<span class="comment">% ...where p(1) is k</span>
+<span class="comment">% ...where p(2) is w</span>
+modelFunction = @(p) cos(p(1) * x) .* exp(-((p(2) * x) .^2));
+
+<span class="comment">% Generate lamda for error function which returns the error between the</span>
+<span class="comment">% model function and the actual data (based on the parameters passed in)</span>
+errorFunction = @(p) norm(y - modelFunction(p));
+
+<span class="comment">% Minimise error function providing an appropriate parameter estimate</span>
+p = fminsearch(errorFunction, [1 2]);
+
+<span class="comment">% Upack parameters returned by fminsearch which define the parameters that</span>
+<span class="comment">% minimise the error function</span>
+kOptimum = p(1);
+wOptimum = p(2);
+
+<span class="comment">% Generate fitted function</span>
+yFitted = modelFunction(p);
+
+<span class="comment">% Plot and decorate the actual dataset, and the modelled function</span>
+figure(1);
+plot(x, y, <span class="string">'.'</span>, x, yFitted, <span class="string">'-'</span>);
+title(<span class="string">'Non-linear regression'</span>);
+legend(<span class="string">'data'</span>, sprintf(<span class="string">'%0.4f*exp(-%0.4f*x)'</span>, kOptimum, wOptimum));
+xlabel(<span class="string">'x'</span>);
+ylabel(<span class="string">'y'</span>);
+</pre><img vspace="5" hspace="5" src="matlab_programming_01.png" alt=""> <h2 id="4">Part Two : Minimisation</h2><pre class="codeinput"><span class="comment">% Generate domain for k and w values</span>
+k = linspace(-10, 10, 100);
+w = linspace(-10, 10, 100);
+
+<span class="comment">% Calculate error over the k, w domain</span>
+errorArray = nan([length(k), length(w)]);
+<span class="keyword">for</span> i = 1:length(k)
+    <span class="keyword">for</span> j = 1:length(w)
+        kVal = k(:, i);
+        wVal = w(:, j);
+
+        errorArray(i, j) = errorFunction([kVal, wVal]);
+    <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+<span class="comment">% Use 2D plot to visualise the magnitude of the error and identify minima</span>
+<span class="comment">% Four minima found based on symmetry of dataset</span>
+figure(2);
+imagesc(w, k, errorArray);
+hold <span class="string">on</span>;
+
+<span class="comment">% Plot minima of error function onto the 2D plot</span>
+plot3(wOptimum, kOptimum, 0, <span class="string">'-s'</span>, <span class="string">'MarkerSize'</span>, 10,<span class="keyword">...</span>
+    <span class="string">'MarkerEdgeColor'</span>, <span class="string">'red'</span>);
+hold <span class="string">off</span>;
+
+<span class="comment">% Decorate 2D plot</span>
+colorbar;
+axis(<span class="string">'image'</span>);
+title(<span class="string">'Error between model and dataset'</span>);
+subtitle(<span class="string">'Smaller the error, the more accurate the fit'</span>);
+xlabel(<span class="string">'w'</span>);
+ylabel(<span class="string">'k'</span>);
+</pre><img vspace="5" hspace="5" src="matlab_programming_02.png" alt=""> <p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2020b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% Matlab Programming Assignment (By Patrice Harapeti)
+
+%% Background
+% Linear Regression and Minimisation.
+
+%% Setup
+clc; clear; close all;
+
+%% Part One : Linear Regression
+
+% Define given dataset
+x = linspace(-1, 1, 1e3) * 3;
+y = cos(x * 5 * (1+rand(1))) .* exp(-(x * (1+rand(1))) .^ 2) ...
+    + randn(size(x)) * 0.05;
+
+% Define a lambda for model function which behaves like the actual data
+% ...where p(1) is k
+% ...where p(2) is w
+modelFunction = @(p) cos(p(1) * x) .* exp(-((p(2) * x) .^2));
+
+% Generate lamda for error function which returns the error between the
+% model function and the actual data (based on the parameters passed in)
+errorFunction = @(p) norm(y - modelFunction(p));
+
+% Minimise error function providing an appropriate parameter estimate
+p = fminsearch(errorFunction, [1 2]);
+
+% Upack parameters returned by fminsearch which define the parameters that
+% minimise the error function
+kOptimum = p(1);
+wOptimum = p(2);
+
+% Generate fitted function
+yFitted = modelFunction(p);
+
+% Plot and decorate the actual dataset, and the modelled function
+figure(1);
+plot(x, y, '.', x, yFitted, '-');
+title('Non-linear regression');
+legend('data', sprintf('%0.4f*exp(-%0.4f*x)', kOptimum, wOptimum));
+xlabel('x');
+ylabel('y');
+
+%% Part Two : Minimisation
+
+% Generate domain for k and w values
+k = linspace(-10, 10, 100);
+w = linspace(-10, 10, 100);
+
+% Calculate error over the k, w domain
+errorArray = nan([length(k), length(w)]);
+for i = 1:length(k)
+    for j = 1:length(w)
+        kVal = k(:, i);
+        wVal = w(:, j);
+
+        errorArray(i, j) = errorFunction([kVal, wVal]);
+    end
+end
+
+% Use 2D plot to visualise the magnitude of the error and identify minima
+% Four minima found based on symmetry of dataset
+figure(2);
+imagesc(w, k, errorArray);
+hold on;
+
+% Plot minima of error function onto the 2D plot
+plot3(wOptimum, kOptimum, 0, '-s', 'MarkerSize', 10,...
+    'MarkerEdgeColor', 'red');
+hold off;
+
+% Decorate 2D plot
+colorbar;
+axis('image');
+title('Error between model and dataset');
+subtitle('Smaller the error, the more accurate the fit');
+xlabel('w');
+ylabel('k');
+
+##### SOURCE END #####
+--></body></html>
