@@ -20,6 +20,6 @@ df = 1/(N*dt); % frequency spacing
 fi = (0:(N-1)) - floor(N/2); % unfolded index
 f = df*fi; % frequency vector
 
-semilogy(f, abs(Y/N)); % amplitude vs frequency
+semilogy(f, abs(Y)); % amplitude vs frequency
 % plot(f, abs(Y).^2); % power vs frequency
 title('FFT');

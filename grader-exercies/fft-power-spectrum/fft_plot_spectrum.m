@@ -25,6 +25,6 @@ fi = (0:(N-1)) - floor(N/2); % unfolded index
 f = df*fi; % frequency vector
 
 subplot(1, 2, 2);
-plot(f, abs(Y/N)); % amplitude vs frequency
+plot(f, abs(Y)); % amplitude vs frequency
 % plot(f, abs(Y).^2); % power vs frequency
 title('FFT');
