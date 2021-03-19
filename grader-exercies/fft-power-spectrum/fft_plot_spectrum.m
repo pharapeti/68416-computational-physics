@@ -10,21 +10,29 @@ t = t(1:(end-1)); % Time vector
 N = length(t); % Number of samples
 y = sin(2*pi*100*t); % Signal
 
-subplot(1, 2, 1);
+subplot(1, 3, 1);
 plot(t, y);
 title('Signal');
+xlabel('Time (s)');
+ylabel('Amplitude');
 
 Y = fft(y); % FFT computation
 Y = fftshift(Y); % unfold
 Y = Y/N;
 
 dt = mean(diff(t)); % sample spacing
-N = length(t);
-df = 1/(N*dt); % frequency spacing
+df = 1 / (N * dt); % frequency spacing
 fi = (0:(N-1)) - floor(N/2); % unfolded index
-f = df*fi; % frequency vector
+f = df * fi; % frequency vector
 
-subplot(1, 2, 2);
+subplot(1, 3, 2);
 plot(f, abs(Y)); % amplitude vs frequency
-% plot(f, abs(Y).^2); % power vs frequency
 title('FFT');
+xlabel('Frequency (Hz)');
+ylabel('Amplitude');
+
+subplot(1, 3, 3);
+plot(f, abs(Y).^2); % power vs frequency
+title('FFT');
+xlabel('Frequency (Hz)');
+ylabel('Power');
