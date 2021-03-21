@@ -46,9 +46,12 @@ subtitle("Coefficients of x = [" + num2str(c.') + ']');
 legend({'data', '$exp(-x^2)\sum\limits_{i=0}^4c_{i}x^{i}$'}, ...
     'Interpreter', 'Latex');
 
+% Delete temporarily variables of Part 2 (memory optimisation)
+clear;
+
 %% Part 2
 
-% Given dataset
+% Specify given dataset
 x = linspace(-1,1,1+1e3).' * 10;
 y = exp(-(x/(1+rand(1))).^2) .* cos(2*pi*(1+rand(1))*x);
 
@@ -59,13 +62,13 @@ Y = fft(y);
 Y = fftshift(Y);
 
 % Normalise amplitude by normalisation factor, due to summation in DFT
-Y = Y / length(x);
+Y = Y / sqrt(length(x));
 
 % Calculate power spectrum of signal
 power = abs(Y) .^ 2;
 
 % Limit power to be positive for frequency analysis
-xPositive = x(length(x)/2:length(x));
+xPositive = x(floor(length(x)/2) + 1:length(x));
 powerPositive = power(length(power)/2:length(power));
 
 % Plot Amplitude vs x
