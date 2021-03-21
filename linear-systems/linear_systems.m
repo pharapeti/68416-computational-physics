@@ -25,12 +25,15 @@ S = sum((y - yFit) .^ 2);
 m = length(x);
 n = length(c);
 meanSquaredError = sqrt(S / (m - n));
+fprintf('Mean Squared Error = %f\n', meanSquaredError);
 
-% Covariance Matrix
-inverseConjugateMatrix = inv(A.' * A);
+% Generate Covariance Matrix from diaglon of inverse conjugate matrix of A
+covarianceMatrix = diag(inv(A.' * A));
 
 % Uncertainty Matrix
-uncertainty = meanSquaredError .* sqrt(inverseConjugateMatrix);
+uncertainty = meanSquaredError .* sqrt(covarianceMatrix);
+disp("Uncertainty for each coefficient of x = [" + ...
+    num2str(uncertainty.') + ']');
 
 figure(1);
 plot(x, y, '.', 'LineWidth', 1);
@@ -65,6 +68,7 @@ power = abs(Y) .^ 2;
 xPositive = x(length(x)/2:length(x));
 powerPositive = power(length(power)/2:length(power));
 
+% Plot Amplitude vs x
 figure(2);
 subplot(1, 2, 1);
 plot(x, y);
@@ -73,6 +77,7 @@ xlim([-5, 5]);
 xlabel('x');
 ylabel('Amplitude');
 
+% Plot Power vs Frequency
 subplot(1, 2, 2);
 plot(x, power, '-r');
 title('Power vs Frequency');
@@ -80,6 +85,7 @@ xlim([-1, 1]);
 xlabel('Hz');
 ylabel('Power');
 
+% Plot Power vs Frequency for positive frequencies
 figure(3);
 plot(xPositive, powerPositive, '-r');
 title('Power vs Frequency');
