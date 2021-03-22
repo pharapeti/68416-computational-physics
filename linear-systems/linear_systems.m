@@ -46,10 +46,10 @@ subtitle("Coefficients of x = [" + num2str(c.') + ']');
 legend({'data', '$exp(-x^2)\sum\limits_{i=0}^4c_{i}x^{i}$'}, ...
     'Interpreter', 'Latex');
 
+%% Part 2
+
 % Delete temporarily variables of Part 2 (memory optimisation)
 clear;
-
-%% Part 2
 
 % Specify given dataset
 x = linspace(-1,1,1+1e3).' * 10;
@@ -69,7 +69,7 @@ power = abs(Y) .^ 2;
 
 % Limit power to be positive for frequency analysis
 xPositive = x(floor(length(x)/2) + 1:length(x));
-powerPositive = power(length(power)/2:length(power));
+powerPositive = power(floor(length(power)/2)+1:length(power));
 
 % Plot Amplitude vs x
 figure(2);
@@ -93,6 +93,45 @@ figure(3);
 plot(xPositive, powerPositive, '-r');
 title('Power vs Frequency');
 subtitle('For positive frequencies');
-xlim([0, 1]);
 xlabel('Hz');
 ylabel('Power');
+hold on;
+
+% Expectation values
+% E (hz) = Sum of p(x) * x / Sum of p(x)
+standardDeviation = std(powerPositive);
+% expectationValues = (sum(powerPositive) .* 2) ./ sum(powerPositive);
+
+% Full-width half maximum of positive power
+% FWHM = expectationValues .^2 / sqrt(log(2));
+FWHM = 2 .* sqrt(2 .* log(2)) .* standardDeviation;
+
+% Find maxima of positive power vs frequency
+[powerMaxima, maximaIndex] = max(powerPositive);
+frequencyMaxima = xPositive(maximaIndex);
+
+% Mark maxima on plot of positive power vs frequency
+plot(frequencyMaxima, powerMaxima, 'xb', 'LineWidth', 2);
+hold on;
+
+% Calculate half-max power threshold
+powerThreshold = powerMaxima / 2;
+
+% Find indices where power exceeds threshold
+indices = find(powerPositive > powerThreshold);
+
+% Calculate width at half-maximum
+fullWidth = xPositive(indices(end)) - xPositive(indices(1));
+
+% Calculate center of positive power vs frequency
+centerIndex = xPositive(floor(length(indices)/2) + 1);
+
+plot(xPositive(indices), powerThreshold * ones(size(xPositive(indices))),...
+    '--', 'LineWidth', 2);
+
+% Center plot around center value using arbitrary distance from center
+% Based the offset on the full width of the half-maximum as I believe
+% it's fair to assume the Gaussian distribution does not extend any further
+% than 3 times the peak in either direction 
+xlim([frequencyMaxima - (3 * fullWidth), ...
+    frequencyMaxima + (3 * fullWidth)]);
