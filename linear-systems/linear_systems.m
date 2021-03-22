@@ -1,6 +1,14 @@
+%% Linear Systems Assignment (By Patrice Harapeti)
+
+%% Background
+% Linear Regression and Fast Fourier Transform and Frequency Analysis. Not
+% going to lie... this assignment was tough because it tied together all of
+% the concepts we have learnt over the last 4-5 weeks.
+
+%% Setup
 clc; clear; close all;
 
-%% Part 1
+%% Part One : Linear Regression
 
 % Given dataset
 x = linspace(-1,1,1e3).' * 5;
@@ -47,7 +55,7 @@ subtitle("Coefficients of x = [" + num2str(c.') + ']');
 legend({'data', '$exp(-x^2)\sum\limits_{i=0}^4c_{i}x^{i}$'}, ...
     'Interpreter', 'Latex');
 
-%% Part 2
+%% Part Two : Fast Fourier Transform
 
 % Delete temporarily variables of Part 2 (memory optimisation)
 clear;
