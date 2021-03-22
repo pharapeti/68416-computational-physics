@@ -25,6 +25,7 @@ S = sum((y - yFit) .^ 2);
 m = length(x);
 n = length(c);
 meanSquaredError = sqrt(S / (m - n));
+fprintf('\nPart One:\n');
 fprintf('Mean Squared Error = %f\n', meanSquaredError);
 
 % Generate Covariance Matrix from diaglon of inverse conjugate matrix of A
@@ -54,84 +55,99 @@ clear;
 % Specify given dataset
 x = linspace(-1,1,1+1e3).' * 10;
 y = exp(-(x/(1+rand(1))).^2) .* cos(2*pi*(1+rand(1))*x);
+power_real = abs(y).^2;
 
-% Use fft function to generate Discrete Fourier Transform (DFT)
-Y = fft(y);
-
-% Shift the zero-frequency component to the center of the array
-Y = fftshift(Y);
-
-% Normalise amplitude by normalisation factor, due to summation in DFT
-Y = Y / sqrt(length(x));
-
-% Calculate power spectrum of signal
-power = abs(Y) .^ 2;
-
-% Limit power to be positive for frequency analysis
-xPositive = x(floor(length(x)/2) + 1:length(x));
-powerPositive = power(floor(length(power)/2)+1:length(power));
-
-% Plot Amplitude vs x
+% Plot amplitude vs x
 figure(2);
-subplot(1, 2, 1);
+subplot(1, 3, 1);
 plot(x, y);
 title('Amplitude vs x');
 xlim([-5, 5]);
 xlabel('x');
 ylabel('Amplitude');
+legend('Amplitude');
+
+% Plot real power vs x
+figure(2);
+subplot(1, 3, 2);
+plot(x, power_real, 'Color','#008000');
+title('Power vs x');
+xlim([-3, 3]);
+xlabel('x');
+ylabel('Power');
+legend('Power');
+
+% Calculate parameters for transformation matrix
+N = length(y); % number of samples
+sampleSpacing = mean(diff(x)); % sample spacing
+frequencySpacing = 1/(N * sampleSpacing); % frequency spacing
+samplingFrequency = N * frequencySpacing; % sampling frequency
+
+% Calculate frequency vector
+frequency = (-N/2:(N/2)-1) * frequencySpacing;
+
+% Compute forward transformation matrix
+M = exp(-2 * 1i * pi * frequency .* x);
+
+% Apply transformation matrix onto y to convert from [amplitude, x] domain 
+% to[amplitude, frequency] domain
+Y = M * y;
+
+% Calculate power spectrum of signal
+power_freq = abs(Y) .^ 2;
 
 % Plot Power vs Frequency
-subplot(1, 2, 2);
-plot(x, power, '-r');
+subplot(1, 3, 3);
+plot(frequency, power_freq, '-r');
 title('Power vs Frequency');
-xlim([-1, 1]);
+xlim([-3, 3]);
 xlabel('Hz');
 ylabel('Power');
+legend('Power');
 
-% Plot Power vs Frequency for positive frequencies
+% Limit power (in frequency domain) to be positive for frequency analysis
+frequencyPositive = frequency .* (frequency > 0);
+powerPositive = power_freq .* (power_freq > 0);
+
+% Plot power (frequency domain) vs frequency for positive frequencies
 figure(3);
-plot(xPositive, powerPositive, '-r');
+plot(frequencyPositive, powerPositive, '-r');
 title('Power vs Frequency');
 subtitle('For positive frequencies');
+xlim([0, 3]);
 xlabel('Hz');
 ylabel('Power');
 hold on;
 
-% Expectation values
-% E (hz) = Sum of p(x) * x / Sum of p(x)
-standardDeviation = std(powerPositive);
-% expectationValues = (sum(powerPositive) .* 2) ./ sum(powerPositive);
+% Estimate center x in real domain
+powerSum_real = sum(power_real);
+weightedPowerSum_real = sum(power_real .* x);
+expectedCenterX_real = weightedPowerSum_real ./ powerSum_real;
 
-% Full-width half maximum of positive power
-% FWHM = expectationValues .^2 / sqrt(log(2));
-FWHM = 2 .* sqrt(2 .* log(2)) .* standardDeviation;
+% Calculate full-width half maximum in real domain
+FWHM_real = expectedCenterX_real .^2 / sqrt(log(2));
+
+% Estimate center frequency in frequency domain
+powerSum_freq = sum(powerPositive);
+weightedPowerSum_freq = sum(powerPositive .* frequencyPositive.');
+expectedCenterFrequency_freq = weightedPowerSum_freq ./ powerSum_freq;
+
+% Calculate full-width half maximum in frequency domain
+FWHM_freq = expectedCenterFrequency_freq .^2 / sqrt(log(2));
+
+% Print out expectation values and FWHM values in each domain
+fprintf('\nPart Two:\n');
+disp(['Expected center x in real domain: ', ...
+    num2str(expectedCenterX_real)]);
+disp(['Expected center frequency in frequency domain: ', ...
+    num2str(expectedCenterFrequency_freq)]);
+disp(['FWHM in real domain: ', num2str(FWHM_real)]);
+disp(['FWHM in frequency domain: ', num2str(FWHM_freq)]);
 
 % Find maxima of positive power vs frequency
 [powerMaxima, maximaIndex] = max(powerPositive);
-frequencyMaxima = xPositive(maximaIndex);
+frequencyMaxima = frequencyPositive(N - maximaIndex);
 
 % Mark maxima on plot of positive power vs frequency
 plot(frequencyMaxima, powerMaxima, 'xb', 'LineWidth', 2);
-hold on;
-
-% Calculate half-max power threshold
-powerThreshold = powerMaxima / 2;
-
-% Find indices where power exceeds threshold
-indices = find(powerPositive > powerThreshold);
-
-% Calculate width at half-maximum
-fullWidth = xPositive(indices(end)) - xPositive(indices(1));
-
-% Calculate center of positive power vs frequency
-centerIndex = xPositive(floor(length(indices)/2) + 1);
-
-plot(xPositive(indices), powerThreshold * ones(size(xPositive(indices))),...
-    '--', 'LineWidth', 2);
-
-% Center plot around center value using arbitrary distance from center
-% Based the offset on the full width of the half-maximum as I believe
-% it's fair to assume the Gaussian distribution does not extend any further
-% than 3 times the peak in either direction 
-xlim([frequencyMaxima - (3 * fullWidth), ...
-    frequencyMaxima + (3 * fullWidth)]);
+legend('Power', 'Max Power');
