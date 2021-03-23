@@ -1,3 +1,11 @@
+%% ODE Mini-Report Assignment (By Patrice Harapeti)
+
+%% Background
+% Damped Simple Oscillator
+
+%% Part Zero : Setup
+
+% Clear existing workspace
 clear; clc; close all
 
 % Setup parameters
@@ -46,6 +54,7 @@ b2 = (gamma - sqrt((gamma)^2 - (4 .*k))) ./ -2;
 %   d/dt [x; v] = [0 1; -k -gamma] * [x; v]
 
 % Negatively dampened (will converge at y = 0)
+% Also known as an underdamped system
 A = [0 1; -k -gamma];
 
 % Use ode45 to numerically solve
@@ -53,24 +62,53 @@ A = [0 1; -k -gamma];
 position = x(:, 1);
 velocity = x(:, 2);
 
+%% Part Three : Plotting
+
 % Plot Position vs Time
 figure(2);
 subplot(1, 3, 1);
 plot(t, position);
+
+% Draw horizontal line at y = 0 to represent convergence value
+yline(0, '--');
+grid on;
 title('Position vs Time');
+xlim([0, 70]);
 xlabel('Time');
 ylabel('Position');
 
 % Plot Velocity vs Time
 subplot(1, 3, 2);
 plot(t, velocity, 'r');
+grid on;
 title('Velocity vs Time');
+xlim([0, 70]);
 xlabel('Time');
 ylabel('Velocity');
 
 % Plot Position vs Velocity
 subplot(1, 3, 3);
 plot(position, velocity, 'g', 'LineWidth', 1.2);
+grid on;
 title('Postion vs Velocity');
 xlabel('Position');
 ylabel('Velocity');
+
+%% Part Four : Convergence
+
+% Prove the numerical solution converges at the same value the analytical
+% solution conveges to
+
+%% Part Five : Error between analytical and numerical solution
+
+% Produce a plot of the error between the analytical and numberical
+% solution as as the step size of increased/decreased
+% Plot should be plot(stepsize, error)
+
+%% Part Six : Fourier Analysis of numerical solution
+
+% Compute a power spectrum graph of the numerical solution
+% Plot (frequency, power_freqSpace);
+
+% Determine the center frequency and FWHM
+% Include these in the plot
