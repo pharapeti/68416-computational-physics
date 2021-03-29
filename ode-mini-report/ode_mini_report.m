@@ -28,15 +28,15 @@ yline(0, '--');
 grid on;
 
 % Overdamped
-plot(timeSeries, analyticalSolution(timeSeries, 2.5, 0.1));
+plot(timeSeries, analyticalSolution(timeSeries, 2.5, 0.1, x_initial));
 hold on;
 
 % Critically Damped
-plot(timeSeries, analyticalSolution(timeSeries, 2, 1), 'g');
+plot(timeSeries, analyticalSolution(timeSeries, 2, 1, x_initial), 'g');
 hold on;
 
 % Underdamped
-plot(timeSeries, analyticalSolution(timeSeries, 1, 5), 'r');
+plot(timeSeries, analyticalSolution(timeSeries, 1, 5, x_initial), 'r');
 title('Analytical Solution');
 xlabel('Time');
 ylabel('Position');
@@ -104,7 +104,7 @@ ylabel('Velocity');
 % solution conveges to
 
 % Analytical solution
-analytical_position = analyticalSolution(timeSeries, 0.1, 3);
+analytical_position = analyticalSolution(timeSeries, 0.1, 3, x_initial);
 
 % Solve for constants
 c = analytical_position.' \ position;
@@ -145,7 +145,7 @@ fprintf('Mean Squared Error = %f\n', meanSquaredError);
 
 %% Part Seven : Function Definitions
 
-function position = analyticalSolution(timeSeries, gamma, k)  
+function position = analyticalSolution(timeSeries, gamma, k, x_init)  
     %   Derivation
     %   Let x = e^bt
     %   therefore... xdot = b * e^bt
@@ -176,14 +176,14 @@ function position = analyticalSolution(timeSeries, gamma, k)
     % Reference: https://nrich.maths.org/11054
     if discriminant == 0 % critically damped
         % Solve for A and B constants
-        A = 2;
-        B = 2 .* b_1;
+        A = x_init;
+        B = x_init .* b_1;
         
         position = (A + B.*timeSeries) .* exp(b_1 .* timeSeries);
     elseif discriminant > 0 % overdamped
         % Solve for A and B constants
-        A = (2 .* b_2) ./ (b_2 - b_1);
-        B = (2 .* b_1) ./ (b_1 - b_2);
+        A = (x_init .* b_2) ./ (b_2 - b_1);
+        B = (x_init .* b_1) ./ (b_1 - b_2);
     
         position = (A .* exp(b_1 .* timeSeries)) + ...
             (B .* exp(b_2 .* timeSeries));
@@ -194,8 +194,8 @@ function position = analyticalSolution(timeSeries, gamma, k)
         beta = imag(b_2);
         
         % Solve for A and B constants
-        A = 2;
-        B = -2 ./ beta;
+        A = x_init;
+        B = -x_init ./ beta;
 
         position = exp(alpha .* timeSeries) .* ...
             (A.*cos(beta.*timeSeries) + B.*sin(beta.*timeSeries));
