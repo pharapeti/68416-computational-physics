@@ -22,64 +22,26 @@ x0 = [x_initial; v_initial];
 
 %% Part One : Analytical Solution
 
-%   Derivation
-%   Let x = e^bt
-%   Let xdot = b * e^bt
-%   Let xddot = b^2 * e^bt
-%
-%   Therefore, -xddot - gamma*xdot - k*x = 0 equals
-%   -b^2 * e^bt - (gamma * b * e^bt) - ke^bt = 0
-%
-%   Pull e^bt out as common factor, this leaves us
-%   e^bt (-b^2 - gamma*b - k) = 0
-%
-%   Therefore b^2 + gamma*b + k must equal 0
-%   Solving for b
-%   b = (gamma ± sqrt((gamma)^2 - (4k)) / -2
-%   
-%   Overdamped when...         gamma^2 - 4k > 0
-%   Critically damped when...  gamma^2 - 4k = 0
-%   Underdamped when...        gamma^2 - 4k < 0
-
-% Calculate roots of characteristics equations
-b_1 = (-gamma + sqrt(gamma.^2 - (4 .* k))) ./ 2;
-b_2 = (-gamma - sqrt(gamma.^2 - (4 .* k))) ./ 2;
-
-% Solve for A and B constants
-A = (-2 .* b_2) ./ (b_1 - b_2);
-B = (2 .* b_1) ./ (b_1 - b_2);
-
-alpha = real(b_1);
-beta = imag(b_2);
-
-% Define function in three cases based on the determinant of the roots
-% Reference: https://nrich.maths.org/11054
-over_damped = (A .* exp(b_1 .* timeSeries)) + (B .* exp(b_2 .* timeSeries));
-critically_damped = (A + B.*timeSeries) .* exp(b_1 .* timeSeries);
-under_damped = exp(alpha .* timeSeries) .* (A.*cos(beta.*timeSeries) + B.*sin(beta.*timeSeries));
-
 % Plot analytical solution
 figure(1);
-subplot(1, 3, 1);
-plot(timeSeries, over_damped);
-title('Overdamped');
-xlim([0, 70]);
-xlabel('Time');
-ylabel('Position');
+yline(0, '--');
+grid on;
 
-subplot(1, 3, 2);
-plot(timeSeries, critically_damped);
-title('Critically Damped');
-xlim([0, 70]);
-xlabel('Time');
-ylabel('Position');
+% Overdamped
+plot(timeSeries, analyticalSolution(timeSeries, 2.5, 0.1));
+hold on;
 
-subplot(1, 3, 3);
-plot(timeSeries, under_damped);
-title('Underdamped');
-xlim([0, 70]);
+% Critically Damped
+plot(timeSeries, analyticalSolution(timeSeries, 2, 1), 'g');
+hold on;
+
+% Underdamped
+plot(timeSeries, analyticalSolution(timeSeries, 1, 5), 'r');
+title('Analytical Solution');
 xlabel('Time');
 ylabel('Position');
+legend('Overdamped', 'Critically Damped', 'Underdamped');
+hold off;
 
 %% Part Two : Numberical Solution (USE EULERS OR ANOTHER METHOD)
 
@@ -141,11 +103,14 @@ ylabel('Velocity');
 % Prove the numerical solution converges at the same value the analytical
 % solution conveges to
 
+% Analytical solution
+analytical_position = analyticalSolution(timeSeries, 0.1, 3);
+
 % Solve for constants
-c = under_damped.' \ position;
+c = analytical_position.' \ position;
 
 % Sum squared error
-S = sum((under_damped - position) .^ 2);
+S = sum((analytical_position - position) .^ 2);
 
 % Mean squared error
 % ... m = number of data points = length(timeSeries)
@@ -156,11 +121,11 @@ n = length(c);
 meanSquaredError = sqrt(S / (m - n));
 fprintf('Mean Squared Error = %f\n', meanSquaredError);
 
-% Generate Covariance Matrix from diaglon of inverse conjugate matrix of A
-covarianceMatrix = diag(inv(under_damped.' * under_damped));
+% Generate Covariance Matrix from diagonal of inverse conjugate matrix of A
+%covarianceMatrix = diag(inv(analytical_position.' * analytical_position));
 
 % Uncertainty Matrix
-uncertainty = meanSquaredError .* sqrt(covarianceMatrix);
+%uncertainty = meanSquaredError .* sqrt(covarianceMatrix);
 
 %% Part Five : Error between analytical and numerical solution
 
@@ -177,3 +142,62 @@ uncertainty = meanSquaredError .* sqrt(covarianceMatrix);
 
 % Determine the center frequency and FWHM
 % Include these in the plot
+
+%% Part Seven : Function Definitions
+
+function position = analyticalSolution(timeSeries, gamma, k)  
+    %   Derivation
+    %   Let x = e^bt
+    %   therefore... xdot = b * e^bt
+    %   therefore... xddot = b^2 * e^bt
+    %
+    %   Plugging into the original PDE give us...
+    %   -b^2 * e^bt - (gamma * b * e^bt) - ke^bt = 0
+    %
+    %   Pull e^bt out as common factor, this leaves us...
+    %   e^bt (-b^2 - gamma*b - k) = 0
+    %
+    %   Therefore b^2 + gamma*b + k must equal 0
+    %   Solving for b
+    %   b = (gamma ± sqrt((gamma)^2 - (4k)) / -2
+    %   
+    %   Overdamped when...         gamma^2 - 4k > 0
+    %   Critically damped when...  gamma^2 - 4k = 0
+    %   Underdamped when...        gamma^2 - 4k < 0
+
+    % Calculate roots of characteristics equations
+    b_1 = (-gamma + sqrt(gamma.^2 - (4 .* k))) ./ 2;
+    b_2 = (-gamma - sqrt(gamma.^2 - (4 .* k))) ./ 2;
+    
+    % Define discriminant of characteristic equation
+    discriminant = gamma.^2 - (4 .* k);
+    
+    % Define function in three cases based on the determinant of the roots
+    % Reference: https://nrich.maths.org/11054
+    if discriminant == 0 % critically damped
+        % Solve for A and B constants
+        A = 2;
+        B = 2 .* b_1;
+        
+        position = (A + B.*timeSeries) .* exp(b_1 .* timeSeries);
+    elseif discriminant > 0 % overdamped
+        % Solve for A and B constants
+        A = (2 .* b_2) ./ (b_2 - b_1);
+        B = (2 .* b_1) ./ (b_1 - b_2);
+    
+        position = (A .* exp(b_1 .* timeSeries)) + ...
+            (B .* exp(b_2 .* timeSeries));
+
+    else % underdamped if discriminant is less than 0
+        % Separate real and imaginary parts of roots
+        alpha = real(b_1);
+        beta = imag(b_2);
+        
+        % Solve for A and B constants
+        A = 2;
+        B = -2 ./ beta;
+
+        position = exp(alpha .* timeSeries) .* ...
+            (A.*cos(beta.*timeSeries) + B.*sin(beta.*timeSeries));
+    end
+end
