@@ -17,7 +17,7 @@ gamma = 0.25; % dampening term
 
 % Initial conditions
 x_initial = 2; % initial position (metres)
-v_initial = 1; % intial velocity (metres / second)
+v_initial = 0; % intial velocity (metres / second)
 x0 = [x_initial; v_initial];
 
 %% Part One : Analytical Solution
@@ -33,17 +33,55 @@ x0 = [x_initial; v_initial];
 %   Pull e^bt out as common factor, this leaves us
 %   e^bt (-b^2 - gamma*b - k) = 0
 %
-%   Therefore -b^2 - gamma*b - k must equal 0
+%   Therefore b^2 + gamma*b + k must equal 0
 %   Solving for b
-%   b = (gamma ± sqrt((-gamma)^2 - (4 * -1 * -k)) / -2
-b1 = (gamma + sqrt((gamma)^2 - (4 .* k))) ./ -2;
-b2 = (gamma - sqrt((gamma)^2 - (4 .*k))) ./ -2;
+%   b = (gamma ± sqrt((gamma)^2 - (4k)) / -2
+%   
+%   Overdamped when...         gamma^2 - 4k > 0
+%   Critically damped when...  gamma^2 - 4k = 0
+%   Underdamped when...        gamma^2 - 4k < 0
+
+% Calculate roots of characteristics equations
+b_1 = (-gamma + sqrt(gamma.^2 - (4 .* k))) ./ 2;
+b_2 = (-gamma - sqrt(gamma.^2 - (4 .* k))) ./ 2;
+
+% Solve for A and B constants
+A = (-2 .* b_2) ./ (b_1 - b_2);
+B = (2 .* b_1) ./ (b_1 - b_2);
+
+alpha = real(b_1);
+beta = imag(b_2);
+
+% Define function in three cases based on the determinant of the roots
+% Reference: https://nrich.maths.org/11054
+over_damped = (A .* exp(b_1 .* timeSeries)) + (B .* exp(b_2 .* timeSeries));
+critically_damped = (A + B.*timeSeries) .* exp(b_1 .* timeSeries);
+under_damped = exp(alpha .* timeSeries) .* (A.*cos(beta.*timeSeries) + B.*sin(beta.*timeSeries));
 
 % Plot analytical solution
-% figure(1);
-% plot(timeSeries, analyticalSolution);
+figure(1);
+subplot(1, 3, 1);
+plot(timeSeries, over_damped);
+title('Overdamped');
+xlim([0, 70]);
+xlabel('Time');
+ylabel('Position');
 
-%% Part Two : Numberical Solution
+subplot(1, 3, 2);
+plot(timeSeries, critically_damped);
+title('Critically Damped');
+xlim([0, 70]);
+xlabel('Time');
+ylabel('Position');
+
+subplot(1, 3, 3);
+plot(timeSeries, under_damped);
+title('Underdamped');
+xlim([0, 70]);
+xlabel('Time');
+ylabel('Position');
+
+%% Part Two : Numberical Solution (USE EULERS OR ANOTHER METHOD)
 
 % Convert 2nd order equation into a system of two coupled 1st order 
 % equations using the variable suspension technique
@@ -94,19 +132,25 @@ title('Postion vs Velocity');
 xlabel('Position');
 ylabel('Velocity');
 
+% Plot surface plot of gamma/k vs time to visualise how the 
+% ratio (dampeing) of the parameters affect the function
+
 %% Part Four : Convergence
 
+% Pick particular case
 % Prove the numerical solution converges at the same value the analytical
 % solution conveges to
 
 %% Part Five : Error between analytical and numerical solution
 
+% Pick particular case
 % Produce a plot of the error between the analytical and numberical
 % solution as as the step size of increased/decreased
 % Plot should be plot(stepsize, error)
 
 %% Part Six : Fourier Analysis of numerical solution
 
+% Do this for each case
 % Compute a power spectrum graph of the numerical solution
 % Plot (frequency, power_freqSpace);
 
