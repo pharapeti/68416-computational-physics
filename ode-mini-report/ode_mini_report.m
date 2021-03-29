@@ -133,7 +133,7 @@ xlabel('Position');
 ylabel('Velocity');
 
 % Plot surface plot of gamma/k vs time to visualise how the 
-% ratio (dampeing) of the parameters affect the function
+% ratio (dampening) of the parameters affect the function
 
 %% Part Four : Convergence
 
@@ -141,10 +141,31 @@ ylabel('Velocity');
 % Prove the numerical solution converges at the same value the analytical
 % solution conveges to
 
+% Solve for constants
+c = under_damped.' \ position;
+
+% Sum squared error
+S = sum((under_damped - position) .^ 2);
+
+% Mean squared error
+% ... m = number of data points = length(timeSeries)
+% ... n = number of coefficients = length(c)
+% ... therefore m - n
+m = length(timeSeries);
+n = length(c);
+meanSquaredError = sqrt(S / (m - n));
+fprintf('Mean Squared Error = %f\n', meanSquaredError);
+
+% Generate Covariance Matrix from diaglon of inverse conjugate matrix of A
+covarianceMatrix = diag(inv(under_damped.' * under_damped));
+
+% Uncertainty Matrix
+uncertainty = meanSquaredError .* sqrt(covarianceMatrix);
+
 %% Part Five : Error between analytical and numerical solution
 
 % Pick particular case
-% Produce a plot of the error between the analytical and numberical
+% Produce a plot of the error between the analytical and numerical
 % solution as as the step size of increased/decreased
 % Plot should be plot(stepsize, error)
 
