@@ -12,8 +12,10 @@ clear; clc; close all
 timestep = 0.01; % timestep (seconds)
 totalTime = 100; % total time of simulation (seconds)
 timeSeries = 0:timestep:totalTime;
-k = 0.25; % frequency term
-gamma = 0.25; % dampening term
+
+% TO REMOVE
+k = 0.25; % frequency term (TO REMOVE)
+gamma = 0.25; % dampening term (TO REMOVE)
 
 % Initial conditions
 x_initial = 2; % initial position (metres)
@@ -43,7 +45,43 @@ ylabel('Position');
 legend('Overdamped', 'Critically Damped', 'Underdamped');
 hold off;
 
-%% Part Two : Numberical Solution (USE EULERS OR ANOTHER METHOD)
+%% Part Two : Exploration of Analytical Solution
+% Plot surface plot of gamma/k vs time to visualise how the 
+% ratio (dampening) of the parameters affect the function
+
+% Fix value of parameter k
+kExplore = 1;
+
+gammaSeries = 0:0.5:2;
+ratioSeries = nan(length(gammaSeries));
+positionSeries = nan(length(gammaSeries));
+
+% build up ratioSeries
+for i = 1:length(gammaSeries)
+    % Calculate gamma using kExplore
+    gamma = gammaSeries(i);
+
+    % Calculate ratio using gamma and kExplore
+    ratioSeries(i) = gamma.^2 ./ k;
+
+    % Calculate position based on timeSeries, gamma, kExplore and x_inital
+    positionSeries(i, :) = analyticalSolution(timeSeries, gamma, kExplore, x_initial);
+end
+
+% Plot ratio of parameters vs position and time
+surf(timeSeries, ratioSeries, positionSeries, 'EdgeColor', 'none', 'FaceAlpha', 0.8);
+
+% Decorate surface plot
+colorbar
+title('Behaviour of anaytical solution')
+xlabel('Gamma squared / k = 4');
+ylabel('Time');
+zlabel('Position');
+
+% Adjust camera line of sight
+view([-15 3 4]);
+
+%% Part Three : Numberical Solution (USE EULERS OR ANOTHER METHOD)
 
 % Convert 2nd order equation into a system of two coupled 1st order 
 % equations using the variable suspension technique
@@ -62,7 +100,7 @@ A = [0 1; -k -gamma];
 position = x(:, 1);
 velocity = x(:, 2);
 
-%% Part Three : Plotting
+%% Part Four : Plotting
 
 % Plot Position vs Time
 figure(2);
@@ -94,10 +132,7 @@ title('Postion vs Velocity');
 xlabel('Position');
 ylabel('Velocity');
 
-% Plot surface plot of gamma/k vs time to visualise how the 
-% ratio (dampening) of the parameters affect the function
-
-%% Part Four : Convergence
+%% Part Five : Convergence
 
 % Pick particular case
 % Prove the numerical solution converges at the same value the analytical
@@ -126,13 +161,6 @@ fprintf('Mean Squared Error = %f\n', meanSquaredError);
 
 % Uncertainty Matrix
 %uncertainty = meanSquaredError .* sqrt(covarianceMatrix);
-
-%% Part Five : Error between analytical and numerical solution
-
-% Pick particular case
-% Produce a plot of the error between the analytical and numerical
-% solution as as the step size of increased/decreased
-% Plot should be plot(stepsize, error)
 
 %% Part Six : Fourier Analysis of numerical solution
 
