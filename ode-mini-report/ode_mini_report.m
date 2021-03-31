@@ -13,28 +13,27 @@ timestep = 0.01; % timestep (seconds)
 totalTime = 100; % total time of simulation (seconds)
 timeSeries = 0:timestep:totalTime;
 
-% Initial conditions
+% Define initial conditions of system
 x_initial = 2; % initial position (metres)
 v_initial = 0; % intial velocity (metres / second)
-x0 = [x_initial; v_initial];
 
 %% Part One : Analytical Solution
 
 % Plot analytical solution
-figure(1);
+figure('NumberTitle', 'off', 'Name', 'Analytical Solution of each case');
 yline(0, '--');
 grid on;
 
-% Overdamped
-plot(timeSeries, analyticalSolution(timeSeries, 2.5, 0.1, x_initial));
+% Overdamped case
+plot(timeSeries, generateAnalyticalSolution(timeSeries, 2.5, 0.1, x_initial));
 hold on;
 
-% Critically Damped
-plot(timeSeries, analyticalSolution(timeSeries, 2, 1, x_initial), 'g');
+% Critically Damped case
+plot(timeSeries, generateAnalyticalSolution(timeSeries, 2, 1, x_initial), 'g');
 hold on;
 
-% Underdamped
-plot(timeSeries, analyticalSolution(timeSeries, 1, 5, x_initial), 'r');
+% Underdamped case
+plot(timeSeries, generateAnalyticalSolution(timeSeries, 1, 5, x_initial), 'r');
 title('Analytical Solution');
 xlabel('Time');
 ylabel('Position');
@@ -45,7 +44,7 @@ hold off;
 % Plot surface plot of gamma/k vs time to visualise how the 
 % ratio (dampening) of the parameters affect the function
 
-% Fix value of parameter k
+% Fix value of parameter k while gamma changes
 kExplore = 1;
 
 % Determine number of points required in discretization
@@ -56,7 +55,7 @@ gammaSeries = linspace(0, 2, noPoints);
 ratioSeries = nan(size(gammaSeries));
 positionSeries = nan(size(gammaSeries));
 
-% build up ratioSeries
+% Build up vectors
 for i = 1:length(gammaSeries)
     % Calculate gamma using kExplore
     gamma = gammaSeries(i);
@@ -64,12 +63,12 @@ for i = 1:length(gammaSeries)
     % Calculate ratio using gamma and kExplore
     ratioSeries(i) = gamma.^2 ./ kExplore;
 
-    % Calculate position based on timeSeries, gamma, kExplore and x_inital
-    positionSeries(i, :) = analyticalSolution(timeSeries, gamma, kExplore, x_initial);
+    % Calculate position based on time and gamma ratio
+    positionSeries(i, :) = generateAnalyticalSolution(timeSeries, gamma, kExplore, x_initial);
 end
 
 % Plot ratio of parameters vs position and time
-figure(2);
+figure('NumberTitle', 'off', 'Name', 'Function Behavioural Analysis');
 surf(timeSeries, ratioSeries, positionSeries);
 
 % Decorate surface plot
@@ -79,38 +78,18 @@ xlabel('Gamma squared / k = 4');
 ylabel('Time');
 zlabel('Position');
 
-% Adjust camera line of sight
-view([-15 3 4]);
+% Adjust camera viewport
+%view([-15 3 4]);
 
 %% Part Three : Numberical Solution (USE EULERS OR ANOTHER METHOD)
 
-% Convert 2nd order equation into a system of two coupled 1st order 
-% equations using the variable suspension technique
-%   Let xdot = v
-%   Let vdot = xddot = -gamma * xdot - k * x
-%
-%   Since xdot = v, then...
-%   d/dt [x; v] = [0 1; -k -gamma] * [x; v]
-
-% TO REMOVE
-k = 0.25; % frequency term (TO REMOVE)
-gamma = 0.05; % dampening term (TO REMOVE)
-
-% Negatively dampened (will converge at y = 0)
-% Also known as an underdamped system
-A = [0 1; -k -gamma];
-
-% Use ode45 to numerically solve
-[t, x] = ode45(@(t, x) A * x, timeSeries, x0);
-position = x(:, 1);
-velocity = x(:, 2);
-
-%% Part Four : Plotting
+% Generate numerical solution for the underdamped case
+[numerical_position, numerical_velocity] = generateNumericalSolution(timeSeries, 0.5, 2, x_initial, v_initial);
 
 % Plot Position vs Time
-figure(3);
+figure('NumberTitle', 'off', 'Name', 'Numerical Solution of underdamped case');
 subplot(1, 3, 1);
-plot(t, position);
+plot(timeSeries, numerical_position);
 
 % Draw horizontal line at y = 0 to represent convergence value
 yline(0, '--');
@@ -122,7 +101,7 @@ ylabel('Position');
 
 % Plot Velocity vs Time
 subplot(1, 3, 2);
-plot(t, velocity, 'r');
+plot(timeSeries, numerical_velocity, 'r');
 grid on;
 title('Velocity vs Time');
 xlim([0, 70]);
@@ -131,7 +110,7 @@ ylabel('Velocity');
 
 % Plot Position vs Velocity
 subplot(1, 3, 3);
-plot(position, velocity, 'g', 'LineWidth', 1.2);
+plot(numerical_position, numerical_velocity, 'g', 'LineWidth', 1.2);
 grid on;
 title('Postion vs Velocity');
 xlabel('Position');
@@ -139,25 +118,18 @@ ylabel('Velocity');
 
 %% Part Five : Convergence
 
-% Pick particular case, underdamped in this case
 % Prove the numerical solution converges at the same value the analytical
 % solution conveges to
 
+% Pick particular case, underdamped in this case
+gammaConvergence = 0.1;
+kConvergence = 3;
+
 % Analytical solution
-analytical_position = analyticalSolution(timeSeries, 0.1, 3, x_initial);
+analytical_position = generateAnalyticalSolution(timeSeries, gammaConvergence, kConvergence, x_initial);
 
-% Numerical solution (grabbed from above but to be updated and turned into
-% a function)
-k = 0.25; % frequency term (TO REMOVE)
-gamma = 0.05; % dampening term (TO REMOVE)
-
-% Negatively dampened (will converge at y = 0)
-% Also known as an underdamped system
-A = [0 1; -k -gamma];
-
-% Use ode45 to numerically solve
-[t, x] = ode45(@(t, x) A * x, timeSeries, x0);
-numerical_position = x(:, 1);
+% Numerical solution
+[numerical_position, numerical_velocity] = generateNumericalSolution(timeSeries, gammaConvergence, kConvergence, x_initial, v_initial);
 
 % Take normal of Absolute Error of analytical and numerical solution
 % Reference: https://sutherland.che.utah.edu/wiki/index.php/Iteration_and_Convergence
@@ -166,7 +138,7 @@ fprintf('Normal of Absolute Error = %f\n', normalAbsError);
 
 % Calculate Relative Error
 normalRelError = 0; % TODO
-fprintf('Normal of Absolute Error = %f\n', normalRelError);
+fprintf('Normal of Relative Error = %f\n', normalRelError);
 
 % Expect Absolute and Relative error to indicate that the numerical
 % solution is a valid model of the analytical solution
@@ -180,7 +152,7 @@ errorAtStepSize = nan(length(stepSizes));
 
 % Plot error vs step size
 % We expect the error to be reduced as the step size is minimised
-figure(4);
+figure('NumberTitle', 'off', 'Name', 'Error Analysis');
 loglog(stepSizes, errorAtStepSize);
 title('Error between Analytical Solution and Numerical Solutions vs Step Size');
 xlabel('Step Size (log)');
@@ -189,16 +161,67 @@ legend('Error');
 
 %% Part Seven : Fourier Analysis of numerical solution
 
-% Do this for each case
-% Compute a power spectrum graph of the numerical solution
-% Plot (frequency, power_freqSpace);
+% Determine equation parameters for the underdamped case
+gammaFourier = 0.5;
+kFourier = 2;
 
-% Determine the center frequency and FWHM
-% Include these in the plot
+% Generate positions of analytical solution
+analytical_position = generateAnalyticalSolution(timeSeries, gammaFourier, kFourier, x_initial);
+
+% Define new domain to transformed into frequency space
+x = linspace(-1,1,length(timeSeries)).' * 10;
+power_real = abs(analytical_position).^2;
+
+% Plot real power of analytical solution vs x
+figure('NumberTitle', 'off', 'Name', 'Fourier Analysis of critically damped case');
+subplot(1, 3, 1);
+plot(x, power_real, 'Color','#008000');
+title('Power vs x');
+xlim([-3, 3]);
+xlabel('x');
+ylabel('Power');
+legend('Power');
+
+% Perform Fast Fourier Transform on Analytical Solution
+N = length(x); % Number of samples
+Y = fft(analytical_position); % Compute Fast Fourier Transformation
+dx = mean(diff(x)); % Determine sample spacing
+df = 1/(N*dx); % Determine frequency spacing
+fi = (0:(N-1)) - floor(N/2); % Generate unfolded index
+frequency = df * fi; % Generate frequency vector
+power_freq = abs(Y) .^ 2; % Calculate absolute power in frequency space
+
+% Plot Power vs Frequency
+subplot(1, 3, 2);
+plot(frequency, power_freq, '-r');
+title('Power vs Frequency');
+xlabel('Hz');
+ylabel('Power');
+legend('Power');
+
+% Limit power (in frequency domain) to be positive for frequency analysis
+frequencyPositive = frequency .* (frequency > 0);
+powerPositive = power_freq .* (power_freq > 0);
+
+% Plot power (frequency domain) vs frequency for positive frequencies
+subplot(1, 3, 3);
+plot(frequencyPositive, powerPositive, '-r');
+title('Power vs Frequency');
+subtitle('For positive frequencies');
+xlabel('Hz');
+ylabel('Power');
+hold on;
+
+% Estimate center frequency in frequency domain and include in plot
+powerSum_freq = sum(powerPositive);
+weightedPowerSum_freq = sum(powerPositive .* frequencyPositive.');
+expectedCenterFrequency_freq = weightedPowerSum_freq ./ powerSum_freq;
+
+% Determine FWHM and include in plot
 
 %% Part Eight : Function Definitions
 
-function position = analyticalSolution(timeSeries, gamma, k, x_init)  
+function position = generateAnalyticalSolution(timeSeries, gamma, k, x_init)
     %   Derivation
     %   Let x = e^bt
     %   therefore... xdot = b * e^bt
@@ -253,4 +276,15 @@ function position = analyticalSolution(timeSeries, gamma, k, x_init)
         position = exp(alpha .* timeSeries) .* ...
             (A.*cos(beta.*timeSeries) + B.*sin(beta.*timeSeries));
     end
+end
+
+function [position, velocity] = generateNumericalSolution(timeSeries, gamma, k, x_initial, v_initial)
+    % Negatively dampened (will converge at y = 0)
+    % Also known as an underdamped system
+    A = [0 1; -k -gamma];
+
+    % Use ode45 to numerically solve system of equations
+    [t, x] = ode45(@(t, x) A * x, timeSeries, [x_initial, v_initial]);
+    position = x(:, 1);
+    velocity = x(:, 2);
 end
