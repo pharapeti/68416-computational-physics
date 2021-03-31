@@ -13,10 +13,6 @@ timestep = 0.01; % timestep (seconds)
 totalTime = 100; % total time of simulation (seconds)
 timeSeries = 0:timestep:totalTime;
 
-% TO REMOVE
-k = 0.25; % frequency term (TO REMOVE)
-gamma = 0.25; % dampening term (TO REMOVE)
-
 % Initial conditions
 x_initial = 2; % initial position (metres)
 v_initial = 0; % intial velocity (metres / second)
@@ -52,9 +48,13 @@ hold off;
 % Fix value of parameter k
 kExplore = 1;
 
-gammaSeries = 0:0.5:2;
-ratioSeries = nan(length(gammaSeries));
-positionSeries = nan(length(gammaSeries));
+% Determine number of points required in discretization
+noPoints = 100;
+
+timeSeries = linspace(0, totalTime, noPoints);
+gammaSeries = linspace(0, 2, noPoints);
+ratioSeries = nan(size(gammaSeries));
+positionSeries = nan(size(gammaSeries));
 
 % build up ratioSeries
 for i = 1:length(gammaSeries)
@@ -62,14 +62,15 @@ for i = 1:length(gammaSeries)
     gamma = gammaSeries(i);
 
     % Calculate ratio using gamma and kExplore
-    ratioSeries(i) = gamma.^2 ./ k;
+    ratioSeries(i) = gamma.^2 ./ kExplore;
 
     % Calculate position based on timeSeries, gamma, kExplore and x_inital
     positionSeries(i, :) = analyticalSolution(timeSeries, gamma, kExplore, x_initial);
 end
 
 % Plot ratio of parameters vs position and time
-surf(timeSeries, ratioSeries, positionSeries, 'EdgeColor', 'none', 'FaceAlpha', 0.8);
+figure(2);
+surf(timeSeries, ratioSeries, positionSeries);
 
 % Decorate surface plot
 colorbar
@@ -91,6 +92,10 @@ view([-15 3 4]);
 %   Since xdot = v, then...
 %   d/dt [x; v] = [0 1; -k -gamma] * [x; v]
 
+% TO REMOVE
+k = 0.25; % frequency term (TO REMOVE)
+gamma = 0.05; % dampening term (TO REMOVE)
+
 % Negatively dampened (will converge at y = 0)
 % Also known as an underdamped system
 A = [0 1; -k -gamma];
@@ -103,7 +108,7 @@ velocity = x(:, 2);
 %% Part Four : Plotting
 
 % Plot Position vs Time
-figure(2);
+figure(3);
 subplot(1, 3, 1);
 plot(t, position);
 
@@ -134,35 +139,55 @@ ylabel('Velocity');
 
 %% Part Five : Convergence
 
-% Pick particular case
+% Pick particular case, underdamped in this case
 % Prove the numerical solution converges at the same value the analytical
 % solution conveges to
 
 % Analytical solution
 analytical_position = analyticalSolution(timeSeries, 0.1, 3, x_initial);
 
-% Solve for constants
-c = analytical_position.' \ position;
+% Numerical solution (grabbed from above but to be updated and turned into
+% a function)
+k = 0.25; % frequency term (TO REMOVE)
+gamma = 0.05; % dampening term (TO REMOVE)
 
-% Sum squared error
-S = sum((analytical_position - position) .^ 2);
+% Negatively dampened (will converge at y = 0)
+% Also known as an underdamped system
+A = [0 1; -k -gamma];
 
-% Mean squared error
-% ... m = number of data points = length(timeSeries)
-% ... n = number of coefficients = length(c)
-% ... therefore m - n
-m = length(timeSeries);
-n = length(c);
-meanSquaredError = sqrt(S / (m - n));
-fprintf('Mean Squared Error = %f\n', meanSquaredError);
+% Use ode45 to numerically solve
+[t, x] = ode45(@(t, x) A * x, timeSeries, x0);
+numerical_position = x(:, 1);
 
-% Generate Covariance Matrix from diagonal of inverse conjugate matrix of A
-%covarianceMatrix = diag(inv(analytical_position.' * analytical_position));
+% Take normal of Absolute Error of analytical and numerical solution
+% Reference: https://sutherland.che.utah.edu/wiki/index.php/Iteration_and_Convergence
+normalAbsError = norm(abs(analytical_position - numerical_position));
+fprintf('Normal of Absolute Error = %f\n', normalAbsError);
 
-% Uncertainty Matrix
-%uncertainty = meanSquaredError .* sqrt(covarianceMatrix);
+% Calculate Relative Error
+normalRelError = 0; % TODO
+fprintf('Normal of Absolute Error = %f\n', normalRelError);
 
-%% Part Six : Fourier Analysis of numerical solution
+% Expect Absolute and Relative error to indicate that the numerical
+% solution is a valid model of the analytical solution
+% TODO
+
+%% Part Six : Analyis of error with varying step size
+
+% Generate range of step sizes
+stepSizes = linspace(0.001, 1);
+errorAtStepSize = nan(length(stepSizes));
+
+% Plot error vs step size
+% We expect the error to be reduced as the step size is minimised
+figure(4);
+loglog(stepSizes, errorAtStepSize);
+title('Error between Analytical Solution and Numerical Solutions vs Step Size');
+xlabel('Step Size (log)');
+ylabel('Normalised error');
+legend('Error');
+
+%% Part Seven : Fourier Analysis of numerical solution
 
 % Do this for each case
 % Compute a power spectrum graph of the numerical solution
@@ -171,7 +196,7 @@ fprintf('Mean Squared Error = %f\n', meanSquaredError);
 % Determine the center frequency and FWHM
 % Include these in the plot
 
-%% Part Seven : Function Definitions
+%% Part Eight : Function Definitions
 
 function position = analyticalSolution(timeSeries, gamma, k, x_init)  
     %   Derivation
