@@ -1,7 +1,7 @@
 %% ODE Mini-Report Assignment (By Patrice Harapeti)
 
 %% Background
-% Damped Simple Oscillator
+% Simple Damped Oscillator
 
 %% Part Zero : Setup
 
@@ -25,7 +25,7 @@ yline(0, '--');
 grid on;
 
 % Overdamped case
-plot(timeSeries, generateAnalyticalSolution(timeSeries, 2.5, 0.1, x_initial));
+plot(timeSeries, generateAnalyticalSolution(timeSeries, 2, 0.1, x_initial));
 hold on;
 
 % Critically Damped case
@@ -74,9 +74,9 @@ surf(timeSeries, ratioSeries, positionSeries);
 % Decorate surface plot
 colorbar
 title('Behaviour of anaytical solution')
-xlabel('Gamma squared / k = 4');
-ylabel('Time');
-zlabel('Position');
+xlabel('Gamma squared / k = 4 ratio');
+ylabel('Time (s)');
+zlabel('Position (m)');
 
 % Adjust camera viewport
 %view([-15 3 4]);
@@ -96,8 +96,8 @@ yline(0, '--');
 grid on;
 title('Position vs Time');
 xlim([0, 70]);
-xlabel('Time');
-ylabel('Position');
+xlabel('Time (s)');
+ylabel('Position (m)');
 
 % Plot Velocity vs Time
 subplot(1, 3, 2);
@@ -105,16 +105,16 @@ plot(timeSeries, numerical_velocity, 'r');
 grid on;
 title('Velocity vs Time');
 xlim([0, 70]);
-xlabel('Time');
-ylabel('Velocity');
+xlabel('Time (s)');
+ylabel('Velocity (m/s)');
 
 % Plot Position vs Velocity
 subplot(1, 3, 3);
 plot(numerical_position, numerical_velocity, 'g', 'LineWidth', 1.2);
 grid on;
 title('Postion vs Velocity');
-xlabel('Position');
-ylabel('Velocity');
+xlabel('Position (m)');
+ylabel('Velocity (m/s)');
 
 %% Part Five : Convergence
 
@@ -129,16 +129,23 @@ kConvergence = 3;
 analytical_position = generateAnalyticalSolution(timeSeries, gammaConvergence, kConvergence, x_initial);
 
 % Numerical solution
-[numerical_position, numerical_velocity] = generateNumericalSolution(timeSeries, gammaConvergence, kConvergence, x_initial, v_initial);
+[numerical_position, ~] = generateNumericalSolution(timeSeries, gammaConvergence, kConvergence, x_initial, v_initial);
 
 % Take normal of Absolute Error of analytical and numerical solution
 % Reference: https://sutherland.che.utah.edu/wiki/index.php/Iteration_and_Convergence
-normalAbsError = norm(abs(analytical_position - numerical_position));
+normalAbsError = norm(abs(analytical_position) - abs(numerical_position));
 fprintf('Normal of Absolute Error = %f\n', normalAbsError);
 
+% TODO (NOT SURE IF THIS IS CORRECT)
 % Calculate Relative Error
-normalRelError = 0; % TODO
+normalRelError = norm(abs(analytical_position - numerical_position) ./ abs(analytical_position), 2);
+norm(abs(analytical_position - numerical_position));
 fprintf('Normal of Relative Error = %f\n', normalRelError);
+
+% TODO (NOT SURE IF THIS IS CORRECT)
+% Calculate Percentage Error
+percentageError = norm(abs(analytical_position - numerical_position)) ./ norm(abs(analytical_position)) .* 100;
+fprintf('Percentage Error = %f\n', percentageError);
 
 % Expect Absolute and Relative error to indicate that the numerical
 % solution is a valid model of the analytical solution
@@ -284,7 +291,7 @@ function [position, velocity] = generateNumericalSolution(timeSeries, gamma, k, 
     A = [0 1; -k -gamma];
 
     % Use ode45 to numerically solve system of equations
-    [t, x] = ode45(@(t, x) A * x, timeSeries, [x_initial, v_initial]);
+    [~, x] = ode45(@(t, x) A * x, timeSeries, [x_initial, v_initial]);
     position = x(:, 1);
     velocity = x(:, 2);
 end
