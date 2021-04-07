@@ -149,17 +149,17 @@ end
 figure('NumberTitle', 'off', 'Name', 'Error Analysis');
 subplot(1, 2, 1);
 loglog(stepSizes, averageErrorAtStepSize);
-title('Relative Error');
-xlabel('Step Size (log)');
-ylabel('Relative Error Percent (%)');
-legend('Relative Error Percent (%)');
-
-subplot(1, 2, 2);
-loglog(stepSizes, relativePercentErrorAtStepSize, 'r');
-title('Average Error');
+title('Average Error vs Step Size');
 xlabel('Step Size (log)');
 ylabel('Average Error');
 legend('Average Error');
+
+subplot(1, 2, 2);
+loglog(stepSizes, relativePercentErrorAtStepSize, 'r');
+title('Relative Error (%) vs Step Size');
+xlabel('Step Size (log)');
+ylabel('Relative Error (%)');
+legend('Relative Error (%)');
 
 %% Part Five : Fourier Analysis of numerical solution
 
@@ -296,12 +296,10 @@ function [averageError, relativeError] = calculateError(analyticalSolution, nume
     % Absolute error between analytical and numerical solution
     absoluteError = abs(analyticalSolution - numericalSolution);
 
-    % Calculate Average Error
+    % Calculate Average Absolute Error
     % Reference: https://sutherland.che.utah.edu/wiki/index.php/Iteration_and_Convergence
     averageError = norm(absoluteError) ./ sqrt(length(analyticalSolution));
-    % TODO REMOVE ME fprintf('Average Error = %f\n', averageError);
 
     % Calculate Relative Error
-    relativeError = norm(absoluteError) ./ norm(analyticalSolution);
-    % TODO REMOVE MEfprintf('Relative Error = %f\n', relativeError);
+    relativeError = norm(absoluteError) ./ norm(abs(analyticalSolution));
 end
