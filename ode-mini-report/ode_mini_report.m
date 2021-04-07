@@ -1,42 +1,44 @@
 %% ODE Mini-Report Assignment (By Patrice Harapeti)
 
-%% Background
-% About the Simple Damped Oscillator:
-
+%% Damped Oscillator
+%
 % A damped oscillator is an type of harmonic oscillator which possesses an
 % identifiable characteristic known as dampening, which acts as a resistive
 % or frictional force to oppose the direction of motion of the oscillator
 % and aims to minimise the total energy of the system.
-
+%
 % There are namely three types of damped oscillators. The type of a damped
 % oscillator is determined by it's dampening ratio - which is often
 % expressed as the determinant in the characteristic equation which 
 % describes the partial differential.
-
+%
 % The first case is where the determinant is positive; also known as the
 % Overdamped case. In the Overdamped case, the system exponentially decays 
 % to it's final steady state without oscillating. The larger the dampening 
 % ratio, the longer it takes for the oscillator to reach equilibrium.
-
+%
 % The second case is where the determinant equals zero; this is known as
 % the Critically damped case. In this case, the system reaches equilibrium
 % as quickly possible without oscillating.
-
+%
 % The last case is where the determinant is negative; also known as the
 % Underamped case. This case describes an oscillator which osciallates at a
 % given frequency and eventually reaches equilibrium. The rate at which the
 % oscillator reaches equilibrium is further determined by the dampening
 % ratio.
-
+%
 % TODO INSERT EQUATION WHICH CALCULATES THE ANGULAR FREQUENCY OF THE
 % UNDERDAMPED CASE
-
+%
 % TODO INSERT EQUATION WHICH CALCULATES HOW LONG IT TAKES TO REACH
 % EQUILIBRIUM
-
+%
 % Display master equation (in latex form) and how the analytical solution 
 % is derived
-
+% $-\frac{d^{2} x}{d t^{2}}-\gamma \frac{d x}{d t}-k x=0$
+%
+%% Numerical Solutions to Systems
+%
 % TODO make this section more original
 % Briefly discuss why we numerically solve systems of equations
 % A variety of physics problems and systems are not able to be dervied in
@@ -45,13 +47,13 @@
 % to numerical solutions which quantize and discretize parameters and/or 
 % data, such that it can be processed in a digital system such as a
 % computer.
-
+%
 % Since the inception of the techqinue to numerical solve problems, many 
 % numerical methods have gained popularity due to their ability to provide
 % consistent and convergent solutions to a complex system. Numerical
 % methods can also be classified in various types, but in an effort to keep
 % this report brief select the Euler's method as our numerical method.
-
+%
 % REFERENCE: https://en.wikipedia.org/wiki/Euler_method
 % The Euler's method is a widely adopted numerical method which is able to 
 % numerically solving one or more ordinary differential equations. The main 
@@ -59,20 +61,22 @@
 % implementation. The Euler's method is a first-order method, which means 
 % that the local error is proportional to the square of the step size, and 
 % the global error is proportional to the step size. 
-
+%
 % This means that the level of discretization used when determining a 
 % step size in the implementation of the Euler's method can be finely
 % chosen to reach a sufficient minimum error criteria. The main limit to
 % minimising the step size will lie in the computational power available
 % during runtime.
-
+%
 % Brief discuss on Validation and Convergence
 % We must also consider the accuracy and validity of our numerical
 % solution. A numerical solution is only valid if the accuracy of the
 % solution is known, compared against other criteria such as other
 % numerical solutions, an analytical solution, experimental results,
 % intermediate results or convergence. 
-
+%
+%% Validation of Numerical Solutions
+%
 % REFERENCE: https://core.ac.uk/download/pdf/41765513.pdf
 % Some types of numericals solutions are best suited for particular kinds 
 % of validation. For example, using an analytical solution to validate a 
@@ -82,16 +86,16 @@
 % solutions. Luckily in our case, we are have derived a simple analytical
 % solution for our system - allowing us to compare the numerical solution
 % against the analytical system by techniques such as converage.
-
+%
 % Explore analytical solution with varying parameters and discuss the three
 % cases (underdamped, critically damped, overdamped)
-
+%
 % As discussed in the paragrahps above, the local error found in a 
 % numerical solution generated from the Euler's method grows proportinally
 % with the step size used when discretizing the input dataset. Therefore,
 % we would expect the local error to decrease linearly (TODO verify linearly) 
 % as the step size decreases.
-
+%
 % By looking at the graph below, we can see that the Average Absolute Error
 % and Relative Error Percentage both decrease as the step size is
 % decreased. This proves that the Euler's method is an effective numerical
@@ -99,20 +103,22 @@
 % Further, as the both types of error decreases as the the dataset is more
 % granularly discretized, it is clear that the analytical and numerical
 % solution both converge.
-
+%
+%% Exploring solutions
+%
 % Systems are often analysed through various techniques relevant to the
 % type of system and behaviour present in the system. In our case, the
 % damped oscillator can be analysed through the lense of Fourier Analysis.
 % In short, Fourier Analysis is the study of representing a function as a
 % sum of trigonometric functions; other through the Fourier Series.
-
+%
 % Performing Fourier Analysis via MATLAB can be greatly simplified by using
 % the Fast Fourier Transform method; which produces a Fast Fourier
 % Transformation matrix, which can be applied to a set of input domain to
 % trasform the domain into one of frequency and space. Fourier Analysis can
 % be used on our system to identify key features such as the power, center
 % frequency and decay time of our damped oscillator.
-
+%
 % Discuss FWHM and frequency (compare this with calculated oscillation
 % frequency from above)
 
