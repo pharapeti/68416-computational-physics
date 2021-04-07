@@ -124,11 +124,12 @@ kErrorAnalysis = 3;
 
 % Generate range of step sizes
 stepSizes = linspace(0.001, 1);
-averageErrorAtStepSize = nan(length(stepSizes));
-relativePercentErrorAtStepSize = nan(length(stepSizes));
+averageErrorAtStepSize = nan(size(stepSizes));
+relativePercentErrorAtStepSize = nan(size(stepSizes));
 
+% Loop over each discretized step size
 for i = 1:length(stepSizes)
-    % Generate timeseries of fixed timeframe (100 seconds)based on step size
+    % Generate timeseries for discretized total time based on step size
     varyingTimeSeries = 0:stepSizes(i):totalTime;
 
     % Generate analytical solution with timeseries
@@ -211,6 +212,7 @@ title('Power vs Frequency');
 subtitle('For positive frequencies');
 xlabel('Hz');
 ylabel('Power');
+legend('Power');
 hold on;
 
 % Estimate center frequency in frequency domain and include in plot
