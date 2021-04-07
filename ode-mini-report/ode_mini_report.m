@@ -81,7 +81,7 @@ zlabel('Position (m)');
 % Adjust camera viewport
 %view([-15 3 4]);
 
-%% Part Three : Numberical Solution (USE EULERS OR ANOTHER METHOD)
+%% Part Three : Numerical Solution (TODO USE EULERS OR ANOTHER METHOD)
 
 % Generate numerical solution for the underdamped case
 [numerical_position, numerical_velocity] = generateNumericalSolution(timeSeries, 0.5, 2, x_initial, v_initial);
@@ -116,57 +116,51 @@ title('Postion vs Velocity');
 xlabel('Position (m)');
 ylabel('Velocity (m/s)');
 
-%% Part Five : Convergence
-
-% Prove the numerical solution converges at the same value the analytical
-% solution conveges to
+%% Part Four : Analyis of error with varying step size
 
 % Pick particular case, underdamped in this case
-gammaConvergence = 0.1;
-kConvergence = 3;
-
-% Analytical solution
-analytical_position = generateAnalyticalSolution(timeSeries, gammaConvergence, kConvergence, x_initial);
-
-% Numerical solution
-[numerical_position, ~] = generateNumericalSolution(timeSeries, gammaConvergence, kConvergence, x_initial, v_initial);
-
-% Take normal of Absolute Error of analytical and numerical solution
-% Reference: https://sutherland.che.utah.edu/wiki/index.php/Iteration_and_Convergence
-normalAbsError = norm(abs(analytical_position) - abs(numerical_position));
-fprintf('Normal of Absolute Error = %f\n', normalAbsError);
-
-% TODO (NOT SURE IF THIS IS CORRECT)
-% Calculate Relative Error
-normalRelError = norm(abs(analytical_position - numerical_position) ./ abs(analytical_position), 2);
-norm(abs(analytical_position - numerical_position));
-fprintf('Normal of Relative Error = %f\n', normalRelError);
-
-% TODO (NOT SURE IF THIS IS CORRECT)
-% Calculate Percentage Error
-percentageError = norm(abs(analytical_position - numerical_position)) ./ norm(abs(analytical_position)) .* 100;
-fprintf('Percentage Error = %f\n', percentageError);
-
-% Expect Absolute and Relative error to indicate that the numerical
-% solution is a valid model of the analytical solution
-% TODO
-
-%% Part Six : Analyis of error with varying step size
+gammaErrorAnalysis = 0.1;
+kErrorAnalysis = 3;
 
 % Generate range of step sizes
 stepSizes = linspace(0.001, 1);
-errorAtStepSize = nan(length(stepSizes));
+averageErrorAtStepSize = nan(length(stepSizes));
+relativePercentErrorAtStepSize = nan(length(stepSizes));
 
-% Plot error vs step size
+for i = 1:length(stepSizes)
+    % Generate timeseries of fixed timeframe (100 seconds)based on step size
+    varyingTimeSeries = 0:stepSizes(i):totalTime;
+
+    % Generate analytical solution with timeseries
+    analyticalPos = generateAnalyticalSolution(varyingTimeSeries, gammaErrorAnalysis, kErrorAnalysis, x_initial);
+
+    % Generate numerical solution with same timeseries
+    [numericalPos, ~] = generateNumericalSolution(varyingTimeSeries, gammaErrorAnalysis, kErrorAnalysis, x_initial, v_initial);
+
+    % Calculate error at the current step size
+    [averageError, relativeError] = calculateError(analyticalPos, numericalPos.');
+    averageErrorAtStepSize(i) = averageError;
+    relativePercentErrorAtStepSize(i) = relativeError .* 100;
+end
+
+% Plot each type of error vs step size
 % We expect the error to be reduced as the step size is minimised
 figure('NumberTitle', 'off', 'Name', 'Error Analysis');
-loglog(stepSizes, errorAtStepSize);
-title('Error between Analytical Solution and Numerical Solutions vs Step Size');
+subplot(1, 2, 1);
+loglog(stepSizes, averageErrorAtStepSize);
+title('Relative Error');
 xlabel('Step Size (log)');
-ylabel('Normalised error');
-legend('Error');
+ylabel('Relative Error Percent (%)');
+legend('Relative Error Percent (%)');
 
-%% Part Seven : Fourier Analysis of numerical solution
+subplot(1, 2, 2);
+loglog(stepSizes, relativePercentErrorAtStepSize, 'r');
+title('Average Error');
+xlabel('Step Size (log)');
+ylabel('Average Error');
+legend('Average Error');
+
+%% Part Five : Fourier Analysis of numerical solution
 
 % Determine equation parameters for the underdamped case
 gammaFourier = 0.5;
@@ -200,7 +194,7 @@ power_freq = abs(Y) .^ 2; % Calculate absolute power in frequency space
 
 % Plot Power vs Frequency
 subplot(1, 3, 2);
-plot(frequency, power_freq, '-r');
+plot(frequency, power_freq);
 title('Power vs Frequency');
 xlabel('Hz');
 ylabel('Power');
@@ -226,7 +220,7 @@ expectedCenterFrequency_freq = weightedPowerSum_freq ./ powerSum_freq;
 
 % Determine FWHM and include in plot
 
-%% Part Eight : Function Definitions
+%% Part Six : Function Definitions
 
 function position = generateAnalyticalSolution(timeSeries, gamma, k, x_init)
     %   Derivation
@@ -294,4 +288,18 @@ function [position, velocity] = generateNumericalSolution(timeSeries, gamma, k, 
     [~, x] = ode45(@(t, x) A * x, timeSeries, [x_initial, v_initial]);
     position = x(:, 1);
     velocity = x(:, 2);
+end
+
+function [averageError, relativeError] = calculateError(analyticalSolution, numericalSolution)
+    % Absolute error between analytical and numerical solution
+    absoluteError = abs(analyticalSolution - numericalSolution);
+
+    % Calculate Average Error
+    % Reference: https://sutherland.che.utah.edu/wiki/index.php/Iteration_and_Convergence
+    averageError = norm(absoluteError) ./ sqrt(length(analyticalSolution));
+    % TODO REMOVE ME fprintf('Average Error = %f\n', averageError);
+
+    % Calculate Relative Error
+    relativeError = norm(absoluteError) ./ norm(analyticalSolution);
+    % TODO REMOVE MEfprintf('Relative Error = %f\n', relativeError);
 end
