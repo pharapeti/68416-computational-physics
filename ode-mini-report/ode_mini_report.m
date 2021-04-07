@@ -2,15 +2,15 @@
 
 %% Damped Oscillator
 %
-% A damped oscillator is an type of harmonic oscillator which possesses an
-% identifiable characteristic known as dampening, which acts as a resistive
-% or frictional force to oppose the direction of motion of the oscillator
-% and aims to minimise the total energy of the system.
+% A damped oscillator is a type of harmonic oscillator which possesses an
+% identifiable characteristic known as dampening, which is a resistive
+% or frictional force that opposes the direction of motion of the 
+% oscillator and aims to minimise the total energy of the system.
 %
 % There are namely three types of damped oscillators. The type of a damped
-% oscillator is determined by it's dampening ratio - which is often
-% expressed as the determinant in the characteristic equation which 
-% describes the partial differential.
+% oscillator is determined by the value of the oscillator's dampening 
+% ratio - which is often expressed as the determinant in the characteristic
+% equation which describes the partial differential.
 %
 % The first case is where the determinant is positive; also known as the
 % Overdamped case. In the Overdamped case, the system exponentially decays 
@@ -27,16 +27,28 @@
 % oscillator reaches equilibrium is further determined by the dampening
 % ratio.
 %
-% TODO INSERT EQUATION WHICH CALCULATES THE ANGULAR FREQUENCY OF THE
-% UNDERDAMPED CASE
+% The angular frequency of an undamped oscillator can be determined by the 
+% following equation:
 %
-% TODO INSERT EQUATION WHICH CALCULATES HOW LONG IT TAKES TO REACH
-% EQUILIBRIUM
+% $\omega = \sqrt\frac{k}{m}$
 %
-% Display master equation (in latex form) and how the analytical solution 
-% is derived
+% The Q-Factor or Quality Factor is a scalar value which can be computed to
+% describe how long it takes for a given oscillator to dampen it's motion 
+% to equilibrium. The following definition of the Q-Factor described how
+% as the dampening ratio is minimised, the oscillators ability to resist
+% energy loss increases:
+%
+% $Q = \frac{1}{2\xi}$
+%
+%% Problem Specification
+%
+% The following pertial differential equation describes a damped oscillator.
+% This report will the derivation, implementation, analysis and valdiation 
+% of a numerical solution for this system.
+% 
 % $-\frac{d^{2} x}{d t^{2}}-\gamma \frac{d x}{d t}-k x=0$
 %
+% TODO INCLUDE DERIVIATION OF ANALYTICAL HERE
 %% Numerical Solutions to Systems
 %
 % TODO make this section more original
