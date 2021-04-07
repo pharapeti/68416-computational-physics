@@ -1,0 +1,694 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>ODE Mini-Report Assignment (By Patrice Harapeti)</title><meta name="generator" content="MATLAB 9.9"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2021-04-07"><meta name="DC.source" content="ode_mini_report.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; }
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+span.typesection { color:#A0522D }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>ODE Mini-Report Assignment (By Patrice Harapeti)</h1><!--introduction--><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Background</a></li><li><a href="#2">Part Zero : Setup</a></li><li><a href="#3">Part One : Analytical Solution</a></li><li><a href="#4">Part Two : Exploration of Analytical Solution</a></li><li><a href="#5">Part Three : Numerical Solution (TODO USE EULERS OR ANOTHER METHOD)</a></li><li><a href="#6">Part Four : Analyis of error with varying step size</a></li><li><a href="#7">Part Five : Fourier Analysis of numerical solution</a></li><li><a href="#8">Part Six : Function Definitions</a></li></ul></div><h2 id="1">Background</h2><p>Simple Damped Oscillator</p><pre class="codeinput"><span class="comment">% Discuss a damped oscillator and it's features</span>
+
+<span class="comment">% Identify the oscillation frequency and maximum amplitude</span>
+
+<span class="comment">% Display master equation and how the analytical solution is derived</span>
+
+<span class="comment">% Display how and why Euler's method is used to numerically solve the PDE</span>
+
+<span class="comment">% Explore analytical solution with varying parameters and discuss the three</span>
+<span class="comment">% cases (underdamped, critically damped, overdamped)</span>
+
+<span class="comment">% Determine error between analytical and numerical based on changing step</span>
+<span class="comment">% size</span>
+
+<span class="comment">% Perform Fourier Analysis of a particular case of the analytical solution</span>
+
+<span class="comment">% Discuss FWHM and frequency (compare this with calculated oscillation</span>
+<span class="comment">% frequency from above)</span>
+</pre><h2 id="2">Part Zero : Setup</h2><pre class="codeinput"><span class="comment">% Clear existing workspace</span>
+clear; clc; close <span class="string">all</span>
+
+<span class="comment">% Setup parameters</span>
+timestep = 0.01; <span class="comment">% timestep (seconds)</span>
+totalTime = 100; <span class="comment">% total time of simulation (seconds)</span>
+timeSeries = 0:timestep:totalTime;
+
+<span class="comment">% Define initial conditions of system</span>
+x_initial = 2; <span class="comment">% initial position (metres)</span>
+v_initial = 0; <span class="comment">% intial velocity (metres / second)</span>
+</pre><h2 id="3">Part One : Analytical Solution</h2><pre class="codeinput"><span class="comment">% Plot analytical solution</span>
+figure(<span class="string">'NumberTitle'</span>, <span class="string">'off'</span>, <span class="string">'Name'</span>, <span class="string">'Analytical Solution of each case'</span>);
+yline(0, <span class="string">'--'</span>);
+grid <span class="string">on</span>;
+
+<span class="comment">% Overdamped case</span>
+plot(timeSeries, generateAnalyticalSolution(timeSeries, 2, 0.1, x_initial));
+hold <span class="string">on</span>;
+
+<span class="comment">% Critically Damped case</span>
+plot(timeSeries, generateAnalyticalSolution(timeSeries, 2, 1, x_initial), <span class="string">'g'</span>);
+hold <span class="string">on</span>;
+
+<span class="comment">% Underdamped case</span>
+plot(timeSeries, generateAnalyticalSolution(timeSeries, 1, 5, x_initial), <span class="string">'r'</span>);
+title(<span class="string">'Analytical Solution'</span>);
+xlabel(<span class="string">'Time'</span>);
+ylabel(<span class="string">'Position'</span>);
+legend(<span class="string">'Overdamped'</span>, <span class="string">'Critically Damped'</span>, <span class="string">'Underdamped'</span>);
+hold <span class="string">off</span>;
+</pre><img vspace="5" hspace="5" src="ode_mini_report_01.png" alt=""> <h2 id="4">Part Two : Exploration of Analytical Solution</h2><p>Plot surface plot of gamma/k vs time to visualise how the ratio (dampening) of the parameters affect the function</p><pre class="codeinput"><span class="comment">% Fix value of parameter k while gamma changes</span>
+kExplore = 1;
+
+<span class="comment">% Determine number of points required in discretization</span>
+noPoints = 100;
+
+timeSeries = linspace(0, totalTime, noPoints);
+gammaSeries = linspace(0, 2, noPoints);
+ratioSeries = nan(size(gammaSeries));
+positionSeries = nan(size(gammaSeries));
+
+<span class="comment">% Build up vectors</span>
+<span class="keyword">for</span> i = 1:length(gammaSeries)
+    <span class="comment">% Calculate gamma using kExplore</span>
+    gamma = gammaSeries(i);
+
+    <span class="comment">% Calculate ratio using gamma and kExplore</span>
+    ratioSeries(i) = gamma.^2 ./ kExplore;
+
+    <span class="comment">% Calculate position based on time and gamma ratio</span>
+    positionSeries(i, :) = generateAnalyticalSolution(timeSeries, gamma, kExplore, x_initial);
+<span class="keyword">end</span>
+
+<span class="comment">% Plot ratio of parameters vs position and time</span>
+figure(<span class="string">'NumberTitle'</span>, <span class="string">'off'</span>, <span class="string">'Name'</span>, <span class="string">'Function Behavioural Analysis'</span>);
+surf(timeSeries, ratioSeries, positionSeries);
+
+<span class="comment">% Decorate surface plot</span>
+colorbar
+title(<span class="string">'Behaviour of anaytical solution'</span>)
+xlabel(<span class="string">'Gamma squared / k = 4 ratio'</span>);
+ylabel(<span class="string">'Time (s)'</span>);
+zlabel(<span class="string">'Position (m)'</span>);
+
+<span class="comment">% Adjust camera viewport</span>
+<span class="comment">%view([-15 3 4]);</span>
+</pre><img vspace="5" hspace="5" src="ode_mini_report_02.png" alt=""> <h2 id="5">Part Three : Numerical Solution (TODO USE EULERS OR ANOTHER METHOD)</h2><pre class="codeinput"><span class="comment">% Generate numerical solution for the underdamped case</span>
+[numerical_position, numerical_velocity] = generateNumericalSolution(timeSeries, 0.5, 2, x_initial, v_initial);
+
+<span class="comment">% Plot Position vs Time</span>
+figure(<span class="string">'NumberTitle'</span>, <span class="string">'off'</span>, <span class="string">'Name'</span>, <span class="string">'Numerical Solution of underdamped case'</span>);
+subplot(1, 3, 1);
+plot(timeSeries, numerical_position);
+
+<span class="comment">% Draw horizontal line at y = 0 to represent convergence value</span>
+yline(0, <span class="string">'--'</span>);
+grid <span class="string">on</span>;
+title(<span class="string">'Position vs Time'</span>);
+xlim([0, 70]);
+xlabel(<span class="string">'Time (s)'</span>);
+ylabel(<span class="string">'Position (m)'</span>);
+
+<span class="comment">% Plot Velocity vs Time</span>
+subplot(1, 3, 2);
+plot(timeSeries, numerical_velocity, <span class="string">'r'</span>);
+grid <span class="string">on</span>;
+title(<span class="string">'Velocity vs Time'</span>);
+xlim([0, 70]);
+xlabel(<span class="string">'Time (s)'</span>);
+ylabel(<span class="string">'Velocity (m/s)'</span>);
+
+<span class="comment">% Plot Position vs Velocity</span>
+subplot(1, 3, 3);
+plot(numerical_position, numerical_velocity, <span class="string">'g'</span>, <span class="string">'LineWidth'</span>, 1.2);
+grid <span class="string">on</span>;
+title(<span class="string">'Postion vs Velocity'</span>);
+xlabel(<span class="string">'Position (m)'</span>);
+ylabel(<span class="string">'Velocity (m/s)'</span>);
+</pre><img vspace="5" hspace="5" src="ode_mini_report_03.png" alt=""> <h2 id="6">Part Four : Analyis of error with varying step size</h2><pre class="codeinput"><span class="comment">% Pick particular case, underdamped in this case</span>
+gammaErrorAnalysis = 0.1;
+kErrorAnalysis = 3;
+
+<span class="comment">% Generate range of step sizes</span>
+stepSizes = linspace(0.001, 1);
+averageErrorAtStepSize = nan(size(stepSizes));
+relativePercentErrorAtStepSize = nan(size(stepSizes));
+
+<span class="comment">% Loop over each discretized step size</span>
+<span class="keyword">for</span> i = 1:length(stepSizes)
+    <span class="comment">% Generate timeseries for discretized total time based on step size</span>
+    varyingTimeSeries = 0:stepSizes(i):totalTime;
+
+    <span class="comment">% Generate analytical solution with timeseries</span>
+    analyticalPos = generateAnalyticalSolution(varyingTimeSeries, gammaErrorAnalysis, kErrorAnalysis, x_initial);
+
+    <span class="comment">% Generate numerical solution with same timeseries</span>
+    [numericalPos, ~] = generateNumericalSolution(varyingTimeSeries, gammaErrorAnalysis, kErrorAnalysis, x_initial, v_initial);
+
+    <span class="comment">% Calculate error at the current step size</span>
+    [averageError, relativeError] = calculateError(analyticalPos, numericalPos.');
+    averageErrorAtStepSize(i) = averageError;
+    relativePercentErrorAtStepSize(i) = relativeError .* 100;
+<span class="keyword">end</span>
+
+<span class="comment">% Plot each type of error vs step size</span>
+<span class="comment">% We expect the error to be reduced as the step size is minimised</span>
+figure(<span class="string">'NumberTitle'</span>, <span class="string">'off'</span>, <span class="string">'Name'</span>, <span class="string">'Error Analysis'</span>);
+subplot(1, 2, 1);
+loglog(stepSizes, averageErrorAtStepSize);
+title(<span class="string">'Average Error vs Step Size'</span>);
+xlabel(<span class="string">'Step Size (log)'</span>);
+ylabel(<span class="string">'Average Error'</span>);
+legend(<span class="string">'Average Error'</span>);
+
+subplot(1, 2, 2);
+loglog(stepSizes, relativePercentErrorAtStepSize, <span class="string">'r'</span>);
+title(<span class="string">'Relative Error (%) vs Step Size'</span>);
+xlabel(<span class="string">'Step Size (log)'</span>);
+ylabel(<span class="string">'Relative Error (%)'</span>);
+legend(<span class="string">'Relative Error (%)'</span>);
+</pre><img vspace="5" hspace="5" src="ode_mini_report_04.png" alt=""> <h2 id="7">Part Five : Fourier Analysis of numerical solution</h2><pre class="codeinput"><span class="comment">% Determine equation parameters for the underdamped case</span>
+gammaFourier = 0.5;
+kFourier = 2;
+
+<span class="comment">% Generate positions of analytical solution</span>
+analytical_position = generateAnalyticalSolution(timeSeries, gammaFourier, kFourier, x_initial);
+
+<span class="comment">% Define new domain to transformed into frequency space</span>
+x = linspace(-1,1,length(timeSeries)).' * 10;
+power_real = abs(analytical_position).^2;
+
+<span class="comment">% Plot real power of analytical solution vs x</span>
+figure(<span class="string">'NumberTitle'</span>, <span class="string">'off'</span>, <span class="string">'Name'</span>, <span class="string">'Fourier Analysis of critically damped case'</span>);
+subplot(1, 3, 1);
+plot(x, power_real, <span class="string">'Color'</span>,<span class="string">'#008000'</span>);
+title(<span class="string">'Power vs x'</span>);
+xlim([-3, 3]);
+xlabel(<span class="string">'x'</span>);
+ylabel(<span class="string">'Power'</span>);
+legend(<span class="string">'Power'</span>);
+
+<span class="comment">% Perform Fast Fourier Transform on Analytical Solution</span>
+N = length(x); <span class="comment">% Number of samples</span>
+Y = fft(analytical_position); <span class="comment">% Compute Fast Fourier Transformation</span>
+dx = mean(diff(x)); <span class="comment">% Determine sample spacing</span>
+df = 1/(N*dx); <span class="comment">% Determine frequency spacing</span>
+fi = (0:(N-1)) - floor(N/2); <span class="comment">% Generate unfolded index</span>
+frequency = df * fi; <span class="comment">% Generate frequency vector</span>
+power_freq = abs(Y) .^ 2; <span class="comment">% Calculate absolute power in frequency space</span>
+
+<span class="comment">% Plot Power vs Frequency</span>
+subplot(1, 3, 2);
+plot(frequency, power_freq);
+title(<span class="string">'Power vs Frequency'</span>);
+xlabel(<span class="string">'Hz'</span>);
+ylabel(<span class="string">'Power'</span>);
+legend(<span class="string">'Power'</span>);
+
+<span class="comment">% Limit power (in frequency domain) to be positive for frequency analysis</span>
+frequencyPositive = frequency .* (frequency &gt; 0);
+powerPositive = power_freq .* (power_freq &gt; 0);
+
+<span class="comment">% Plot power (frequency domain) vs frequency for positive frequencies</span>
+subplot(1, 3, 3);
+plot(frequencyPositive, powerPositive, <span class="string">'-r'</span>);
+title(<span class="string">'Power vs Frequency'</span>);
+subtitle(<span class="string">'For positive frequencies'</span>);
+xlabel(<span class="string">'Hz'</span>);
+ylabel(<span class="string">'Power'</span>);
+legend(<span class="string">'Power'</span>);
+hold <span class="string">on</span>;
+
+<span class="comment">% Estimate center frequency in frequency domain and include in plot</span>
+powerSum_freq = sum(powerPositive);
+weightedPowerSum_freq = sum(powerPositive .* frequencyPositive.');
+expectedCenterFrequency_freq = weightedPowerSum_freq ./ powerSum_freq;
+
+<span class="comment">% Determine FWHM and include in plot</span>
+</pre><h2 id="8">Part Six : Function Definitions</h2><pre class="codeinput"><span class="keyword">function</span> position = generateAnalyticalSolution(timeSeries, gamma, k, x_init)
+    <span class="comment">%   Derivation</span>
+    <span class="comment">%   Let x = e^bt</span>
+    <span class="comment">%   therefore... xdot = b * e^bt</span>
+    <span class="comment">%   therefore... xddot = b^2 * e^bt</span>
+    <span class="comment">%</span>
+    <span class="comment">%   Plugging into the original PDE give us...</span>
+    <span class="comment">%   -b^2 * e^bt - (gamma * b * e^bt) - ke^bt = 0</span>
+    <span class="comment">%</span>
+    <span class="comment">%   Pull e^bt out as common factor, this leaves us...</span>
+    <span class="comment">%   e^bt (-b^2 - gamma*b - k) = 0</span>
+    <span class="comment">%</span>
+    <span class="comment">%   Therefore b^2 + gamma*b + k must equal 0</span>
+    <span class="comment">%   Solving for b</span>
+    <span class="comment">%   b = (gamma &plusmn; sqrt((gamma)^2 - (4k)) / -2</span>
+    <span class="comment">%</span>
+    <span class="comment">%   Overdamped when...         gamma^2 - 4k &gt; 0</span>
+    <span class="comment">%   Critically damped when...  gamma^2 - 4k = 0</span>
+    <span class="comment">%   Underdamped when...        gamma^2 - 4k &lt; 0</span>
+
+    <span class="comment">% Calculate roots of characteristics equations</span>
+    b_1 = (-gamma + sqrt(gamma.^2 - (4 .* k))) ./ 2;
+    b_2 = (-gamma - sqrt(gamma.^2 - (4 .* k))) ./ 2;
+
+    <span class="comment">% Define discriminant of characteristic equation</span>
+    discriminant = gamma.^2 - (4 .* k);
+
+    <span class="comment">% Define function in three cases based on the determinant of the roots</span>
+    <span class="comment">% Reference: https://nrich.maths.org/11054</span>
+    <span class="keyword">if</span> discriminant == 0 <span class="comment">% critically damped</span>
+        <span class="comment">% Solve for A and B constants</span>
+        A = x_init;
+        B = x_init .* b_1;
+
+        position = (A + B.*timeSeries) .* exp(b_1 .* timeSeries);
+    <span class="keyword">elseif</span> discriminant &gt; 0 <span class="comment">% overdamped</span>
+        <span class="comment">% Solve for A and B constants</span>
+        A = (x_init .* b_2) ./ (b_2 - b_1);
+        B = (x_init .* b_1) ./ (b_1 - b_2);
+
+        position = (A .* exp(b_1 .* timeSeries)) + <span class="keyword">...</span>
+            (B .* exp(b_2 .* timeSeries));
+
+    <span class="keyword">else</span> <span class="comment">% underdamped if discriminant is less than 0</span>
+        <span class="comment">% Separate real and imaginary parts of roots</span>
+        alpha = real(b_1);
+        beta = imag(b_2);
+
+        <span class="comment">% Solve for A and B constants</span>
+        A = x_init;
+        B = -x_init ./ beta;
+
+        position = exp(alpha .* timeSeries) .* <span class="keyword">...</span>
+            (A.*cos(beta.*timeSeries) + B.*sin(beta.*timeSeries));
+    <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+<span class="keyword">function</span> [position, velocity] = generateNumericalSolution(timeSeries, gamma, k, x_initial, v_initial)
+    <span class="comment">% Negatively dampened (will converge at y = 0)</span>
+    <span class="comment">% Also known as an underdamped system</span>
+    A = [0 1; -k -gamma];
+
+    <span class="comment">% Use ode45 to numerically solve system of equations</span>
+    [~, x] = ode45(@(t, x) A * x, timeSeries, [x_initial, v_initial]);
+    position = x(:, 1);
+    velocity = x(:, 2);
+<span class="keyword">end</span>
+
+<span class="keyword">function</span> [averageError, relativeError] = calculateError(analyticalSolution, numericalSolution)
+    <span class="comment">% Absolute error between analytical and numerical solution</span>
+    absoluteError = abs(analyticalSolution - numericalSolution);
+
+    <span class="comment">% Calculate Average Absolute Error</span>
+    <span class="comment">% Reference: https://sutherland.che.utah.edu/wiki/index.php/Iteration_and_Convergence</span>
+    averageError = norm(absoluteError) ./ sqrt(length(analyticalSolution));
+
+    <span class="comment">% Calculate Relative Error</span>
+    relativeError = norm(absoluteError) ./ norm(abs(analyticalSolution));
+<span class="keyword">end</span>
+</pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2020b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% ODE Mini-Report Assignment (By Patrice Harapeti)
+
+%% Background
+% Simple Damped Oscillator
+
+% Discuss a damped oscillator and it's features
+
+% Identify the oscillation frequency and maximum amplitude
+
+% Display master equation and how the analytical solution is derived
+
+% Display how and why Euler's method is used to numerically solve the PDE
+
+% Explore analytical solution with varying parameters and discuss the three
+% cases (underdamped, critically damped, overdamped)
+
+% Determine error between analytical and numerical based on changing step
+% size
+
+% Perform Fourier Analysis of a particular case of the analytical solution
+
+% Discuss FWHM and frequency (compare this with calculated oscillation
+% frequency from above)
+
+%% Part Zero : Setup
+
+% Clear existing workspace
+clear; clc; close all
+
+% Setup parameters
+timestep = 0.01; % timestep (seconds)
+totalTime = 100; % total time of simulation (seconds)
+timeSeries = 0:timestep:totalTime;
+
+% Define initial conditions of system
+x_initial = 2; % initial position (metres)
+v_initial = 0; % intial velocity (metres / second)
+
+%% Part One : Analytical Solution
+
+% Plot analytical solution
+figure('NumberTitle', 'off', 'Name', 'Analytical Solution of each case');
+yline(0, 'REPLACE_WITH_DASH_DASH');
+grid on;
+
+% Overdamped case
+plot(timeSeries, generateAnalyticalSolution(timeSeries, 2, 0.1, x_initial));
+hold on;
+
+% Critically Damped case
+plot(timeSeries, generateAnalyticalSolution(timeSeries, 2, 1, x_initial), 'g');
+hold on;
+
+% Underdamped case
+plot(timeSeries, generateAnalyticalSolution(timeSeries, 1, 5, x_initial), 'r');
+title('Analytical Solution');
+xlabel('Time');
+ylabel('Position');
+legend('Overdamped', 'Critically Damped', 'Underdamped');
+hold off;
+
+%% Part Two : Exploration of Analytical Solution
+% Plot surface plot of gamma/k vs time to visualise how the 
+% ratio (dampening) of the parameters affect the function
+
+% Fix value of parameter k while gamma changes
+kExplore = 1;
+
+% Determine number of points required in discretization
+noPoints = 100;
+
+timeSeries = linspace(0, totalTime, noPoints);
+gammaSeries = linspace(0, 2, noPoints);
+ratioSeries = nan(size(gammaSeries));
+positionSeries = nan(size(gammaSeries));
+
+% Build up vectors
+for i = 1:length(gammaSeries)
+    % Calculate gamma using kExplore
+    gamma = gammaSeries(i);
+
+    % Calculate ratio using gamma and kExplore
+    ratioSeries(i) = gamma.^2 ./ kExplore;
+
+    % Calculate position based on time and gamma ratio
+    positionSeries(i, :) = generateAnalyticalSolution(timeSeries, gamma, kExplore, x_initial);
+end
+
+% Plot ratio of parameters vs position and time
+figure('NumberTitle', 'off', 'Name', 'Function Behavioural Analysis');
+surf(timeSeries, ratioSeries, positionSeries);
+
+% Decorate surface plot
+colorbar
+title('Behaviour of anaytical solution')
+xlabel('Gamma squared / k = 4 ratio');
+ylabel('Time (s)');
+zlabel('Position (m)');
+
+% Adjust camera viewport
+%view([-15 3 4]);
+
+%% Part Three : Numerical Solution (TODO USE EULERS OR ANOTHER METHOD)
+
+% Generate numerical solution for the underdamped case
+[numerical_position, numerical_velocity] = generateNumericalSolution(timeSeries, 0.5, 2, x_initial, v_initial);
+
+% Plot Position vs Time
+figure('NumberTitle', 'off', 'Name', 'Numerical Solution of underdamped case');
+subplot(1, 3, 1);
+plot(timeSeries, numerical_position);
+
+% Draw horizontal line at y = 0 to represent convergence value
+yline(0, 'REPLACE_WITH_DASH_DASH');
+grid on;
+title('Position vs Time');
+xlim([0, 70]);
+xlabel('Time (s)');
+ylabel('Position (m)');
+
+% Plot Velocity vs Time
+subplot(1, 3, 2);
+plot(timeSeries, numerical_velocity, 'r');
+grid on;
+title('Velocity vs Time');
+xlim([0, 70]);
+xlabel('Time (s)');
+ylabel('Velocity (m/s)');
+
+% Plot Position vs Velocity
+subplot(1, 3, 3);
+plot(numerical_position, numerical_velocity, 'g', 'LineWidth', 1.2);
+grid on;
+title('Postion vs Velocity');
+xlabel('Position (m)');
+ylabel('Velocity (m/s)');
+
+%% Part Four : Analyis of error with varying step size
+
+% Pick particular case, underdamped in this case
+gammaErrorAnalysis = 0.1;
+kErrorAnalysis = 3;
+
+% Generate range of step sizes
+stepSizes = linspace(0.001, 1);
+averageErrorAtStepSize = nan(size(stepSizes));
+relativePercentErrorAtStepSize = nan(size(stepSizes));
+
+% Loop over each discretized step size
+for i = 1:length(stepSizes)
+    % Generate timeseries for discretized total time based on step size
+    varyingTimeSeries = 0:stepSizes(i):totalTime;
+
+    % Generate analytical solution with timeseries
+    analyticalPos = generateAnalyticalSolution(varyingTimeSeries, gammaErrorAnalysis, kErrorAnalysis, x_initial);
+
+    % Generate numerical solution with same timeseries
+    [numericalPos, ~] = generateNumericalSolution(varyingTimeSeries, gammaErrorAnalysis, kErrorAnalysis, x_initial, v_initial);
+
+    % Calculate error at the current step size
+    [averageError, relativeError] = calculateError(analyticalPos, numericalPos.');
+    averageErrorAtStepSize(i) = averageError;
+    relativePercentErrorAtStepSize(i) = relativeError .* 100;
+end
+
+% Plot each type of error vs step size
+% We expect the error to be reduced as the step size is minimised
+figure('NumberTitle', 'off', 'Name', 'Error Analysis');
+subplot(1, 2, 1);
+loglog(stepSizes, averageErrorAtStepSize);
+title('Average Error vs Step Size');
+xlabel('Step Size (log)');
+ylabel('Average Error');
+legend('Average Error');
+
+subplot(1, 2, 2);
+loglog(stepSizes, relativePercentErrorAtStepSize, 'r');
+title('Relative Error (%) vs Step Size');
+xlabel('Step Size (log)');
+ylabel('Relative Error (%)');
+legend('Relative Error (%)');
+
+%% Part Five : Fourier Analysis of numerical solution
+
+% Determine equation parameters for the underdamped case
+gammaFourier = 0.5;
+kFourier = 2;
+
+% Generate positions of analytical solution
+analytical_position = generateAnalyticalSolution(timeSeries, gammaFourier, kFourier, x_initial);
+
+% Define new domain to transformed into frequency space
+x = linspace(-1,1,length(timeSeries)).' * 10;
+power_real = abs(analytical_position).^2;
+
+% Plot real power of analytical solution vs x
+figure('NumberTitle', 'off', 'Name', 'Fourier Analysis of critically damped case');
+subplot(1, 3, 1);
+plot(x, power_real, 'Color','#008000');
+title('Power vs x');
+xlim([-3, 3]);
+xlabel('x');
+ylabel('Power');
+legend('Power');
+
+% Perform Fast Fourier Transform on Analytical Solution
+N = length(x); % Number of samples
+Y = fft(analytical_position); % Compute Fast Fourier Transformation
+dx = mean(diff(x)); % Determine sample spacing
+df = 1/(N*dx); % Determine frequency spacing
+fi = (0:(N-1)) - floor(N/2); % Generate unfolded index
+frequency = df * fi; % Generate frequency vector
+power_freq = abs(Y) .^ 2; % Calculate absolute power in frequency space
+
+% Plot Power vs Frequency
+subplot(1, 3, 2);
+plot(frequency, power_freq);
+title('Power vs Frequency');
+xlabel('Hz');
+ylabel('Power');
+legend('Power');
+
+% Limit power (in frequency domain) to be positive for frequency analysis
+frequencyPositive = frequency .* (frequency > 0);
+powerPositive = power_freq .* (power_freq > 0);
+
+% Plot power (frequency domain) vs frequency for positive frequencies
+subplot(1, 3, 3);
+plot(frequencyPositive, powerPositive, '-r');
+title('Power vs Frequency');
+subtitle('For positive frequencies');
+xlabel('Hz');
+ylabel('Power');
+legend('Power');
+hold on;
+
+% Estimate center frequency in frequency domain and include in plot
+powerSum_freq = sum(powerPositive);
+weightedPowerSum_freq = sum(powerPositive .* frequencyPositive.');
+expectedCenterFrequency_freq = weightedPowerSum_freq ./ powerSum_freq;
+
+% Determine FWHM and include in plot
+
+%% Part Six : Function Definitions
+
+function position = generateAnalyticalSolution(timeSeries, gamma, k, x_init)
+    %   Derivation
+    %   Let x = e^bt
+    %   therefore... xdot = b * e^bt
+    %   therefore... xddot = b^2 * e^bt
+    %
+    %   Plugging into the original PDE give us...
+    %   -b^2 * e^bt - (gamma * b * e^bt) - ke^bt = 0
+    %
+    %   Pull e^bt out as common factor, this leaves us...
+    %   e^bt (-b^2 - gamma*b - k) = 0
+    %
+    %   Therefore b^2 + gamma*b + k must equal 0
+    %   Solving for b
+    %   b = (gamma ± sqrt((gamma)^2 - (4k)) / -2
+    %   
+    %   Overdamped when...         gamma^2 - 4k > 0
+    %   Critically damped when...  gamma^2 - 4k = 0
+    %   Underdamped when...        gamma^2 - 4k < 0
+
+    % Calculate roots of characteristics equations
+    b_1 = (-gamma + sqrt(gamma.^2 - (4 .* k))) ./ 2;
+    b_2 = (-gamma - sqrt(gamma.^2 - (4 .* k))) ./ 2;
+    
+    % Define discriminant of characteristic equation
+    discriminant = gamma.^2 - (4 .* k);
+    
+    % Define function in three cases based on the determinant of the roots
+    % Reference: https://nrich.maths.org/11054
+    if discriminant == 0 % critically damped
+        % Solve for A and B constants
+        A = x_init;
+        B = x_init .* b_1;
+        
+        position = (A + B.*timeSeries) .* exp(b_1 .* timeSeries);
+    elseif discriminant > 0 % overdamped
+        % Solve for A and B constants
+        A = (x_init .* b_2) ./ (b_2 - b_1);
+        B = (x_init .* b_1) ./ (b_1 - b_2);
+    
+        position = (A .* exp(b_1 .* timeSeries)) + ...
+            (B .* exp(b_2 .* timeSeries));
+
+    else % underdamped if discriminant is less than 0
+        % Separate real and imaginary parts of roots
+        alpha = real(b_1);
+        beta = imag(b_2);
+        
+        % Solve for A and B constants
+        A = x_init;
+        B = -x_init ./ beta;
+
+        position = exp(alpha .* timeSeries) .* ...
+            (A.*cos(beta.*timeSeries) + B.*sin(beta.*timeSeries));
+    end
+end
+
+function [position, velocity] = generateNumericalSolution(timeSeries, gamma, k, x_initial, v_initial)
+    % Negatively dampened (will converge at y = 0)
+    % Also known as an underdamped system
+    A = [0 1; -k -gamma];
+
+    % Use ode45 to numerically solve system of equations
+    [~, x] = ode45(@(t, x) A * x, timeSeries, [x_initial, v_initial]);
+    position = x(:, 1);
+    velocity = x(:, 2);
+end
+
+function [averageError, relativeError] = calculateError(analyticalSolution, numericalSolution)
+    % Absolute error between analytical and numerical solution
+    absoluteError = abs(analyticalSolution - numericalSolution);
+
+    % Calculate Average Absolute Error
+    % Reference: https://sutherland.che.utah.edu/wiki/index.php/Iteration_and_Convergence
+    averageError = norm(absoluteError) ./ sqrt(length(analyticalSolution));
+
+    % Calculate Relative Error
+    relativeError = norm(absoluteError) ./ norm(abs(analyticalSolution));
+end
+
+##### SOURCE END #####
+--></body></html>

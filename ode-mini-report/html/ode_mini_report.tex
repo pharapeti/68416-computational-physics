@@ -1,123 +1,67 @@
-%% ODE Mini-Report Assignment (By Patrice Harapeti)
 
-%% Background
-% About the Simple Damped Oscillator:
+% This LaTeX was auto-generated from MATLAB code.
+% To make changes, update the MATLAB code and republish this document.
 
-% A damped oscillator is an type of harmonic oscillator which possesses an
-% identifiable characteristic known as dampening, which acts as a resistive
-% or frictional force to oppose the direction of motion of the oscillator
-% and aims to minimise the total energy of the system.
+\documentclass{article}
+\usepackage{graphicx}
+\usepackage{color}
 
-% There are namely three types of damped oscillators. The type of a damped
-% oscillator is determined by it's dampening ratio - which is often
-% expressed as the determinant in the characteristic equation which 
-% describes the partial differential.
+\sloppy
+\definecolor{lightgray}{gray}{0.5}
+\setlength{\parindent}{0pt}
 
-% The first case is where the determinant is positive; also known as the
-% Overdamped case. In the Overdamped case, the system exponentially decays 
-% to it's final steady state without oscillating. The larger the dampening 
-% ratio, the longer it takes for the oscillator to reach equilibrium.
+\begin{document}
 
-% The second case is where the determinant equals zero; this is known as
-% the Critically damped case. In this case, the system reaches equilibrium
-% as quickly possible without oscillating.
+    
+    
+\section*{ODE Mini-Report Assignment (By Patrice Harapeti)}
 
-% The last case is where the determinant is negative; also known as the
-% Underamped case. This case describes an oscillator which osciallates at a
-% given frequency and eventually reaches equilibrium. The rate at which the
-% oscillator reaches equilibrium is further determined by the dampening
-% ratio.
 
-% TODO INSERT EQUATION WHICH CALCULATES THE ANGULAR FREQUENCY OF THE
-% UNDERDAMPED CASE
+\subsection*{Contents}
 
-% TODO INSERT EQUATION WHICH CALCULATES HOW LONG IT TAKES TO REACH
-% EQUILIBRIUM
+\begin{itemize}
+\setlength{\itemsep}{-1ex}
+   \item Background
+   \item Part Zero : Setup
+   \item Part One : Analytical Solution
+   \item Part Two : Exploration of Analytical Solution
+   \item Part Three : Numerical Solution (TODO USE EULERS OR ANOTHER METHOD)
+   \item Part Four : Analyis of error with varying step size
+   \item Part Five : Fourier Analysis of numerical solution
+   \item Part Six : Function Definitions
+\end{itemize}
 
-% Display master equation (in latex form) and how the analytical solution 
-% is derived
 
-% TODO make this section more original
-% Briefly discuss why we numerically solve systems of equations
-% A variety of physics problems and systems are not able to be dervied in
-% terms of an analytical answer; due to complexity or non-linearity.
-% In an effort to understand these complex systems, physicists have turned
-% to numerical solutions which quantize and discretize parameters and/or 
-% data, such that it can be processed in a digital system such as a
-% computer.
+\subsection*{Background}
 
-% Since the inception of the techqinue to numerical solve problems, many 
-% numerical methods have gained popularity due to their ability to provide
-% consistent and convergent solutions to a complex system. Numerical
-% methods can also be classified in various types, but in an effort to keep
-% this report brief select the Euler's method as our numerical method.
+\begin{par}
+Simple Damped Oscillator
+\end{par} \vspace{1em}
+\begin{verbatim}
+% Discuss a damped oscillator and it's features
 
-% REFERENCE: https://en.wikipedia.org/wiki/Euler_method
-% The Euler's method is a widely adopted numerical method which is able to 
-% numerically solving one or more ordinary differential equations. The main 
-% advantage of using this method is the method's simplicity and ease of 
-% implementation. The Euler's method is a first-order method, which means 
-% that the local error is proportional to the square of the step size, and 
-% the global error is proportional to the step size. 
+% Identify the oscillation frequency and maximum amplitude
 
-% This means that the level of discretization used when determining a 
-% step size in the implementation of the Euler's method can be finely
-% chosen to reach a sufficient minimum error criteria. The main limit to
-% minimising the step size will lie in the computational power available
-% during runtime.
+% Display master equation and how the analytical solution is derived
 
-% Brief discuss on Validation and Convergence
-% We must also consider the accuracy and validity of our numerical
-% solution. A numerical solution is only valid if the accuracy of the
-% solution is known, compared against other criteria such as other
-% numerical solutions, an analytical solution, experimental results,
-% intermediate results or convergence. 
-
-% REFERENCE: https://core.ac.uk/download/pdf/41765513.pdf
-% Some types of numericals solutions are best suited for particular kinds 
-% of validation. For example, using an analytical solution to validate a 
-% numerical solution is only feasible if the analytical solution is simple 
-% to implement and derive. In reality, most systems are highly complex and
-% require experimental data to sufficiently validate any of it's numerical
-% solutions. Luckily in our case, we are have derived a simple analytical
-% solution for our system - allowing us to compare the numerical solution
-% against the analytical system by techniques such as converage.
+% Display how and why Euler's method is used to numerically solve the PDE
 
 % Explore analytical solution with varying parameters and discuss the three
 % cases (underdamped, critically damped, overdamped)
 
-% As discussed in the paragrahps above, the local error found in a 
-% numerical solution generated from the Euler's method grows proportinally
-% with the step size used when discretizing the input dataset. Therefore,
-% we would expect the local error to decrease linearly (TODO verify linearly) 
-% as the step size decreases.
+% Determine error between analytical and numerical based on changing step
+% size
 
-% By looking at the graph below, we can see that the Average Absolute Error
-% and Relative Error Percentage both decrease as the step size is
-% decreased. This proves that the Euler's method is an effective numerical
-% method in solving the system; in comparison to the analytical solution.
-% Further, as the both types of error decreases as the the dataset is more
-% granularly discretized, it is clear that the analytical and numerical
-% solution both converge.
-
-% Systems are often analysed through various techniques relevant to the
-% type of system and behaviour present in the system. In our case, the
-% damped oscillator can be analysed through the lense of Fourier Analysis.
-% In short, Fourier Analysis is the study of representing a function as a
-% sum of trigonometric functions; other through the Fourier Series.
-
-% Performing Fourier Analysis via MATLAB can be greatly simplified by using
-% the Fast Fourier Transform method; which produces a Fast Fourier
-% Transformation matrix, which can be applied to a set of input domain to
-% trasform the domain into one of frequency and space. Fourier Analysis can
-% be used on our system to identify key features such as the power, center
-% frequency and decay time of our damped oscillator.
+% Perform Fourier Analysis of a particular case of the analytical solution
 
 % Discuss FWHM and frequency (compare this with calculated oscillation
 % frequency from above)
+\end{verbatim}
 
-%% Part Zero : Setup
 
+\subsection*{Part Zero : Setup}
+
+\begin{verbatim}
 % Clear existing workspace
 clear; clc; close all
 
@@ -129,9 +73,12 @@ timeSeries = 0:timestep:totalTime;
 % Define initial conditions of system
 x_initial = 2; % initial position (metres)
 v_initial = 0; % intial velocity (metres / second)
+\end{verbatim}
 
-%% Part One : Analytical Solution
 
+\subsection*{Part One : Analytical Solution}
+
+\begin{verbatim}
 % Plot analytical solution
 figure('NumberTitle', 'off', 'Name', 'Analytical Solution of each case');
 yline(0, '--');
@@ -152,11 +99,17 @@ xlabel('Time');
 ylabel('Position');
 legend('Overdamped', 'Critically Damped', 'Underdamped');
 hold off;
+\end{verbatim}
 
-%% Part Two : Exploration of Analytical Solution
-% Plot surface plot of gamma/k vs time to visualise how the 
-% ratio (dampening) of the parameters affect the function
+\includegraphics [width=4in]{ode_mini_report_01.eps}
 
+
+\subsection*{Part Two : Exploration of Analytical Solution}
+
+\begin{par}
+Plot surface plot of gamma/k vs time to visualise how the ratio (dampening) of the parameters affect the function
+\end{par} \vspace{1em}
+\begin{verbatim}
 % Fix value of parameter k while gamma changes
 kExplore = 1;
 
@@ -193,9 +146,14 @@ zlabel('Position (m)');
 
 % Adjust camera viewport
 %view([-15 3 4]);
+\end{verbatim}
 
-%% Part Three : Numerical Solution (TODO USE EULERS OR ANOTHER METHOD)
+\includegraphics [width=4in]{ode_mini_report_02.eps}
 
+
+\subsection*{Part Three : Numerical Solution (TODO USE EULERS OR ANOTHER METHOD)}
+
+\begin{verbatim}
 % Generate numerical solution for the underdamped case
 [numerical_position, numerical_velocity] = generateNumericalSolution(timeSeries, 0.5, 2, x_initial, v_initial);
 
@@ -228,9 +186,14 @@ grid on;
 title('Postion vs Velocity');
 xlabel('Position (m)');
 ylabel('Velocity (m/s)');
+\end{verbatim}
 
-%% Part Four : Analyis of error with varying step size
+\includegraphics [width=4in]{ode_mini_report_03.eps}
 
+
+\subsection*{Part Four : Analyis of error with varying step size}
+
+\begin{verbatim}
 % Pick particular case, underdamped in this case
 gammaErrorAnalysis = 0.1;
 kErrorAnalysis = 3;
@@ -273,9 +236,14 @@ title('Relative Error (%) vs Step Size');
 xlabel('Step Size (log)');
 ylabel('Relative Error (%)');
 legend('Relative Error (%)');
+\end{verbatim}
 
-%% Part Five : Fourier Analysis of numerical solution
+\includegraphics [width=4in]{ode_mini_report_04.eps}
 
+
+\subsection*{Part Five : Fourier Analysis of numerical solution}
+
+\begin{verbatim}
 % Determine equation parameters for the underdamped case
 gammaFourier = 0.5;
 kFourier = 2;
@@ -334,9 +302,12 @@ weightedPowerSum_freq = sum(powerPositive .* frequencyPositive.');
 expectedCenterFrequency_freq = weightedPowerSum_freq ./ powerSum_freq;
 
 % Determine FWHM and include in plot
+\end{verbatim}
 
-%% Part Six : Function Definitions
 
+\subsection*{Part Six : Function Definitions}
+
+\begin{verbatim}
 function position = generateAnalyticalSolution(timeSeries, gamma, k, x_init)
     %   Derivation
     %   Let x = e^bt
@@ -352,7 +323,7 @@ function position = generateAnalyticalSolution(timeSeries, gamma, k, x_init)
     %   Therefore b^2 + gamma*b + k must equal 0
     %   Solving for b
     %   b = (gamma ± sqrt((gamma)^2 - (4k)) / -2
-    %   
+    %
     %   Overdamped when...         gamma^2 - 4k > 0
     %   Critically damped when...  gamma^2 - 4k = 0
     %   Underdamped when...        gamma^2 - 4k < 0
@@ -360,23 +331,23 @@ function position = generateAnalyticalSolution(timeSeries, gamma, k, x_init)
     % Calculate roots of characteristics equations
     b_1 = (-gamma + sqrt(gamma.^2 - (4 .* k))) ./ 2;
     b_2 = (-gamma - sqrt(gamma.^2 - (4 .* k))) ./ 2;
-    
+
     % Define discriminant of characteristic equation
     discriminant = gamma.^2 - (4 .* k);
-    
+
     % Define function in three cases based on the determinant of the roots
     % Reference: https://nrich.maths.org/11054
     if discriminant == 0 % critically damped
         % Solve for A and B constants
         A = x_init;
         B = x_init .* b_1;
-        
+
         position = (A + B.*timeSeries) .* exp(b_1 .* timeSeries);
     elseif discriminant > 0 % overdamped
         % Solve for A and B constants
         A = (x_init .* b_2) ./ (b_2 - b_1);
         B = (x_init .* b_1) ./ (b_1 - b_2);
-    
+
         position = (A .* exp(b_1 .* timeSeries)) + ...
             (B .* exp(b_2 .* timeSeries));
 
@@ -384,7 +355,7 @@ function position = generateAnalyticalSolution(timeSeries, gamma, k, x_init)
         % Separate real and imaginary parts of roots
         alpha = real(b_1);
         beta = imag(b_2);
-        
+
         % Solve for A and B constants
         A = x_init;
         B = -x_init ./ beta;
@@ -416,3 +387,9 @@ function [averageError, relativeError] = calculateError(analyticalSolution, nume
     % Calculate Relative Error
     relativeError = norm(absoluteError) ./ norm(abs(analyticalSolution));
 end
+\end{verbatim}
+
+
+
+\end{document}
+
