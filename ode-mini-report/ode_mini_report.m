@@ -157,7 +157,7 @@ plot(timeSeries, generateAnalyticalSolution(timeSeries, 2, 0.1, x_initial));
 hold on;
 
 % Critically Damped case
-plot(timeSeries, generateAnalyticalSolution(timeSeries, 2, 1, x_initial), 'g');
+plot(timeSeries, generateAnalyticalSolution(timeSeries, 2, 1, x_initial), 'Color', [0 0 1]);
 hold on;
 
 % Underdamped case
@@ -321,10 +321,10 @@ kFourier = 2;
 analytical_position = generateAnalyticalSolution(timeSeries, gammaFourier, kFourier, x_initial);
 
 % Define new domain to transformed into frequency space
-x = linspace(-1,1,length(timeSeries)).' * 10;
+x = linspace(-1,1,length(timeSeries)) * 10;
 power_real = abs(analytical_position).^2;
 
-% Plot real power of analytical solution vs x
+% Plot real power of analytical solution vs space
 figure('NumberTitle', 'off', 'Name', 'Fourier Analysis of critically damped case');
 subplot(1, 3, 1);
 plot(x, power_real, 'Color','#008000');
