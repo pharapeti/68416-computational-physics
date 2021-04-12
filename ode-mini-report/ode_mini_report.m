@@ -320,24 +320,25 @@ kFourier = 2;
 % Generate positions of analytical solution
 analytical_position = generateAnalyticalSolution(timeSeries, gammaFourier, kFourier, x_initial);
 
-% Define new domain to transformed into frequency space
-x = linspace(-1,1,length(timeSeries)) * 10;
-power_real = abs(analytical_position).^2;
+% Calculate power
+power_real = (abs(analytical_position) .^ 2);
 
-% Plot real power of analytical solution vs space
-figure('NumberTitle', 'off', 'Name', 'Fourier Analysis of critically damped case');
+% Plot real power of analytical solution vs time
+figure('NumberTitle', 'off', 'Name', 'Fourier Analysis of underdamped case');
 subplot(1, 3, 1);
-plot(x, power_real, 'Color','#008000');
-title('Power vs x');
-xlim([-3, 3]);
-xlabel('x');
+plot(timeSeries, power_real, 'Color','#008000');
+title('Power vs Time');
+xlim([0, 17]);
+xlabel('Time (s)');
 ylabel('Power');
 legend('Power');
 
 % Perform Fast Fourier Transform on Analytical Solution
-N = length(x); % Number of samples
+N = length(analytical_position); % Number of samples
 Y = fft(analytical_position); % Compute Fast Fourier Transformation
-dx = mean(diff(x)); % Determine sample spacing
+% Y = fftshift(analytical_position); % shift frequencies
+Y = Y/N; % normalize for number of samples
+dx = mean(diff(timeSeries)); % Determine sample spacing
 df = 1/(N*dx); % Determine frequency spacing
 fi = (0:(N-1)) - floor(N/2); % Generate unfolded index
 frequency = df * fi; % Generate frequency vector
@@ -348,30 +349,30 @@ subplot(1, 3, 2);
 plot(frequency, power_freq);
 title('Power vs Frequency');
 xlabel('Hz');
+xlim([-60, 60]);
 ylabel('Power');
 legend('Power');
 
-% Limit power (in frequency domain) to be positive for frequency analysis
-frequencyPositive = frequency .* (frequency > 0);
-powerPositive = power_freq .* (power_freq > 0);
-
 % Plot power (frequency domain) vs frequency for positive frequencies
 subplot(1, 3, 3);
+frequencyPositive = frequency .* (frequency > 0);
+powerPositive = power_freq .* (power_freq > 0);
 plot(frequencyPositive, powerPositive, '-r');
 title('Power vs Frequency');
 subtitle('For positive frequencies');
 xlabel('Hz');
-xlim([-100, 500]);
+xlim([48, 51]);
 ylabel('Power');
 legend('Power');
 hold on;
 
 % Estimate center frequency in frequency domain and include in plot
-powerSum_freq = sum(powerPositive);
-weightedPowerSum_freq = sum(powerPositive .* frequencyPositive.');
-expectedCenterFrequency_freq = weightedPowerSum_freq ./ powerSum_freq;
+powerPositiveSum = sum(powerPositive);
+weightedPowerSum_freq = sum(powerPositive .* frequency.');
+expectedCenterFrequency_freq = weightedPowerSum_freq ./ powerPositive;
 
 % Determine FWHM and include in plot
+
 
 %% Part Seven : Function Definitions
 
