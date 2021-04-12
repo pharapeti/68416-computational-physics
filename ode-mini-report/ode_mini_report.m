@@ -51,8 +51,6 @@
 % TODO INCLUDE DERIVIATION OF ANALYTICAL HERE
 %% Numerical Solutions to Systems
 %
-% TODO make this section more original
-% Briefly discuss why we numerically solve systems of equations
 % A variety of physics problems and systems are not able to be dervied in
 % terms of an analytical answer; due to complexity or non-linearity.
 % In an effort to understand these complex systems, physicists have turned
@@ -105,8 +103,7 @@
 % As discussed in the paragrahps above, the local error found in a 
 % numerical solution generated from the Euler's method grows proportinally
 % with the step size used when discretizing the input dataset. Therefore,
-% we would expect the local error to decrease linearly (TODO verify linearly) 
-% as the step size decreases.
+% we would expect the local error to decrease as the step size decreases.
 %
 % By looking at the graph below, we can see that the Average Absolute Error
 % and Relative Error Percentage both decrease as the step size is
@@ -364,6 +361,7 @@ plot(frequencyPositive, powerPositive, '-r');
 title('Power vs Frequency');
 subtitle('For positive frequencies');
 xlabel('Hz');
+xlim([-100, 500]);
 ylabel('Power');
 legend('Power');
 hold on;
