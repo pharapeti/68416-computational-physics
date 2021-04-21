@@ -8,55 +8,61 @@ timestep = 0.01; % timestep (seconds)
 totalTime = 10; % total time of simulation (seconds)
 timeSeries = 0:timestep:totalTime;
 
-% Define initial conditions of system
-xInitial = 2; % initial position (metres)
-vInitial = 0; % intial velocity (metres / second)
-
 % Constants
 G = 6.67 * 10.^-11;
-M1 = 10; % kg
-M2 = 20; % kg
 
-star1 = Body(10, [5, 5], [0, 0]);
-star2 = Body(20, [0, 0], [0, 0]);
+% Star 1
+star1_mass = 10;
+star1_initial_position = [5, 5];
+star1_initial_velocity = [0, 0];
+star1 = Body(star1_mass, star1_initial_position, star1_initial_velocity);
 
-[positionXOf1, positionXOf2, positionYOf1, positionYOf2, velocityXOf1, velocityXOf2, velocityYOf1, velocityYOf2] = generateNumericalSolution(timeSeries, timestep);
+% Star 2
+star2_mass = 20;
+star2_initial_position = [0, 0];
+star2_initial_velocity = [0, 0];
+star2 = Body(star2_mass, star2_initial_position, star2_initial_velocity);
 
-subplot(1, 8, 1);
-plot(timeSeries, positionXOf1);
-title('PosX of 1');
+starsInSystem = [star1, star2];
 
-subplot(1, 8, 2);
-plot(timeSeries, positionXOf2);
-title('PosX of 2');
+solution = generateNumericalSolution(starsInSystem, timeSeries, timestep);
 
-subplot(1, 8, 3);
-plot(timeSeries, positionYOf1);
-title('PosY of 1');
-
-subplot(1, 8, 4);
-plot(timeSeries, positionYOf2);
-title('PosY of 2');
-
-subplot(1, 8, 5);
-plot(timeSeries, velocityXOf1);
-title('VelX of 1');
-
-subplot(1, 8, 6);
-plot(timeSeries, velocityXOf2);
-title('VelX of 2');
-
-subplot(1, 8, 7);
-plot(timeSeries, velocityYOf1);
-title('VelY of 1');
-
-subplot(1, 8, 8);
-plot(timeSeries, velocityYOf2);
-title('VelY of 2');
+% subplot(1, 8, 1);
+% plot(timeSeries, positionXOf1);
+% title('PosX of 1');
+% 
+% subplot(1, 8, 2);
+% plot(timeSeries, positionXOf2);
+% title('PosX of 2');
+% 
+% subplot(1, 8, 3);
+% plot(timeSeries, positionYOf1);
+% title('PosY of 1');
+% 
+% subplot(1, 8, 4);
+% plot(timeSeries, positionYOf2);
+% title('PosY of 2');
+% 
+% subplot(1, 8, 5);
+% plot(timeSeries, velocityXOf1);
+% title('VelX of 1');
+% 
+% subplot(1, 8, 6);
+% plot(timeSeries, velocityXOf2);
+% title('VelX of 2');
+% 
+% subplot(1, 8, 7);
+% plot(timeSeries, velocityYOf1);
+% title('VelY of 1');
+% 
+% subplot(1, 8, 8);
+% plot(timeSeries, velocityYOf2);
+% title('VelY of 2');
 
 % This function computes a numerical solution for a given dataset via the
 % Euler's method.
-function [positionXOf1, positionXOf2, positionYOf1, positionYOf2, velocityXOf1, velocityXOf2, velocityYOf1, velocityYOf2] = generateNumericalSolution(timeSeries, stepSize)
+function a = generateNumericalSolution(starsInSystem, timeSeries, stepSize)
+    a = 1;
     % Generate vectors
     positionXOf1 = nan(size(timeSeries));
     positionXOf2 = nan(size(timeSeries));
@@ -79,18 +85,21 @@ function [positionXOf1, positionXOf2, positionYOf1, positionYOf2, velocityXOf1, 
     velocityYOf1(1) = 0;
     velocityYOf2(1) = 0;
     
+    % Stars
+    star1 = starsInSystem(1);
+    star2 = starsInSystem(2);
+    
     % Gravitational Factor
     G = 6.67408 * 10.^-11;
-    M1 = 10; % kg
-    M2 = 20; % kg
-    g_factor = G * M1 * M2;
+    g_factor = G * star1.Mass * star2.Mass;
 
     % Inspired by http://www.astro.yale.edu/coppi/astro520/solving_differential_equation.pdf
     % Numerically solve the position and velocity of the model system using
     % function arguments
     for i = 1:length(timeSeries) - 1
         % Calculate distance between star 1 and 2
-        vector_r = calculateDistanceBetweenStars(3, 2, 1, 5);
+        
+        vector_r = calculateDistanceBetweenStars(star1, star2);
         vector_r_length = norm(vector_r);
         unit_vector_r = vector_r ./ vector_r_length;
 
@@ -101,11 +110,11 @@ function [positionXOf1, positionXOf2, positionYOf1, positionYOf2, velocityXOf1, 
         forceXOn2 = - forceXOn1;
         forceYOn2 = - forceYOn1;
 
-        accelerationXOf1 = forceXOn1 ./ M1;
-        accelerationYOf1 = forceYOn1 ./ M1;
+        accelerationXOf1 = forceXOn1 ./ star1.Mass;
+        accelerationYOf1 = forceYOn1 ./ star1.Mass;
 
-        accelerationXOf2 = forceXOn2 ./ M2;
-        accelerationYOf2 = forceYOn2 ./ M2;
+        accelerationXOf2 = forceXOn2 ./ star2.Mass;
+        accelerationYOf2 = forceYOn2 ./ star2.Mass;
         
         velocityXOf1(i + 1) = velocityXOf1(i) + (stepSize .* accelerationXOf1);
         velocityYOf1(i + 1) = velocityYOf1(i) + (stepSize .* accelerationYOf1);
@@ -123,6 +132,16 @@ function [positionXOf1, positionXOf2, positionYOf1, positionYOf2, velocityXOf1, 
     end
 end
 
-function r = calculateDistanceBetweenStars(xpos, ypos, x2pos, y2pos)
-    r = [x2pos - xpos, y2pos - ypos];
+% Returns 1x2 array of distances in (x, y) respectively
+function r = calculateDistanceBetweenStars(starA, starB)
+    % TODO just reference these directly instead of assigned to temporary
+    % variable
+    starA_x = starA.Position(1);
+    starA_y = starA.Position(2);
+    
+    starB_x = starB.Position(1);
+    starB_y = starB.Position(2);
+
+    r = [starB_x - starA_x, starB_y - starA_y];
 end
+

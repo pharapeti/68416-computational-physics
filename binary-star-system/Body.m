@@ -5,7 +5,7 @@ classdef Body
     
     % Properties that can only be modified by the class constructor
     properties (SetAccess = immutable)
-        Weight double {mustBeReal, mustBeFinite, mustBeNonnegative} % in kg
+        Mass double {mustBeReal, mustBeFinite, mustBeNonnegative} % in kg
     end
 
     properties
@@ -17,8 +17,8 @@ classdef Body
 
     methods
         % Constructor of Body class
-        function obj = Body(weight,position, velocity)
-            obj.Weight = weight;
+        function obj = Body(mass, position, velocity)
+            obj.Mass = mass;
             obj.Position = position;
             obj.Velocity = velocity;
         end
