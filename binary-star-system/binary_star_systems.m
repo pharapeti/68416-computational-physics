@@ -4,25 +4,30 @@
 clear; clc; close all
 
 % Setup parameters
-timestep = 0.01; % timestep (seconds)
-totalTime = 10; % total time of simulation (seconds)
+timestep = 1; % timestep (seconds)
+totalTime = 10e4; % total time of simulation (seconds)
 timeSeries = 0:timestep:totalTime;
 
 % Constants
-G = 6.67 * 10.^-11;
+global G
+G = 6.67408 * 10.^-11;
 
 % Star 1
-star1_mass = 10;
+star1_mass = 10e8;
 star1_initial_position = [5, 5];
 star1_initial_velocity = [0, 0];
 star1 = Body(star1_mass, star1_initial_position, star1_initial_velocity);
 
 % Star 2
-star2_mass = 20;
+star2_mass = 10;
 star2_initial_position = [0, 0];
 star2_initial_velocity = [0, 0];
 star2 = Body(star2_mass, star2_initial_position, star2_initial_velocity);
 
+% Set up Star 2 with velocities, such that it orbits Star 1
+star2.Velocity = initialVelocityRequiredForOrbit(star1, star2);
+
+% Package stars of system
 starsInSystem = [star1, star2];
 
 solution = generateNumericalSolution(starsInSystem, timeSeries, timestep);
@@ -70,6 +75,8 @@ title('Star 2 - X,Y vs Time');
 % This function computes a numerical solution for a given dataset via the
 % Euler's method.
 function starMotionArray = generateNumericalSolution(starsInSystem, timeSeries, stepSize)
+    global G
+
     % Stars
     star1 = starsInSystem(1);
     star2 = starsInSystem(2);
@@ -100,7 +107,6 @@ function starMotionArray = generateNumericalSolution(starsInSystem, timeSeries, 
     star2 = starsInSystem(2);
     
     % Gravitational Factor
-    G = 6.67408 * 10.^-11;
     g_factor = G * star1.Mass * star2.Mass;
 
     % Inspired by http://www.astro.yale.edu/coppi/astro520/solving_differential_equation.pdf
@@ -168,3 +174,12 @@ function r = calculateDistanceBetweenStars(star_A, star_B)
     r = [starB_x - starA_x, starB_y - starA_y];
 end
 
+% Returns the orbital velocity required for star B to orbit star A
+% Only holds true when the mass of Star A is much greater than that of Star
+% B
+function velocity = initialVelocityRequiredForOrbit(star_A, star_B)
+    global G
+
+    r = abs(calculateDistanceBetweenStars(star_A, star_B));
+    velocity = sqrt((G * star_A.Mass) ./ r);
+end
