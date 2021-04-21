@@ -17,6 +17,9 @@ G = 6.67 * 10.^-11;
 M1 = 10; % kg
 M2 = 20; % kg
 
+star1 = Body(10, [5, 5], [0, 0]);
+star2 = Body(20, [0, 0], [0, 0]);
+
 [positionXOf1, positionXOf2, positionYOf1, positionYOf2, velocityXOf1, velocityXOf2, velocityYOf1, velocityYOf2] = generateNumericalSolution(timeSeries, timestep);
 
 subplot(1, 8, 1);
