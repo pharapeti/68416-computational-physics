@@ -51,8 +51,6 @@
 % TODO INCLUDE DERIVIATION OF ANALYTICAL HERE
 %% Numerical Solutions to Systems
 %
-% TODO make this section more original
-% Briefly discuss why we numerically solve systems of equations
 % A variety of physics problems and systems are not able to be dervied in
 % terms of an analytical answer; due to complexity or non-linearity.
 % In an effort to understand these complex systems, physicists have turned
@@ -105,8 +103,7 @@
 % As discussed in the paragrahps above, the local error found in a 
 % numerical solution generated from the Euler's method grows proportinally
 % with the step size used when discretizing the input dataset. Therefore,
-% we would expect the local error to decrease linearly (TODO verify linearly) 
-% as the step size decreases.
+% we would expect the local error to decrease as the step size decreases.
 %
 % By looking at the graph below, we can see that the Average Absolute Error
 % and Relative Error Percentage both decrease as the step size is
@@ -145,8 +142,8 @@ totalTime = 100; % total time of simulation (seconds)
 timeSeries = 0:timestep:totalTime;
 
 % Define initial conditions of system
-x_initial = 2; % initial position (metres)
-v_initial = 0; % intial velocity (metres / second)
+xInitial = 2; % initial position (metres)
+vInitial = 0; % intial velocity (metres / second)
 
 %% Part One : Analytical Solution
 
@@ -156,15 +153,15 @@ yline(0, '--');
 grid on;
 
 % Overdamped case
-plot(timeSeries, generateAnalyticalSolution(timeSeries, 2, 0.1, x_initial));
+plot(timeSeries, generateAnalyticalSolution(timeSeries, 2, 0.1, xInitial));
 hold on;
 
 % Critically Damped case
-plot(timeSeries, generateAnalyticalSolution(timeSeries, 2, 1, x_initial), 'g');
+plot(timeSeries, generateAnalyticalSolution(timeSeries, 2, 1, xInitial), 'Color', [0 0 1]);
 hold on;
 
 % Underdamped case
-plot(timeSeries, generateAnalyticalSolution(timeSeries, 1, 5, x_initial), 'r');
+plot(timeSeries, generateAnalyticalSolution(timeSeries, 1, 5, xInitial), 'r');
 title('Analytical Solution');
 xlabel('Time');
 ylabel('Position');
@@ -181,26 +178,26 @@ kExplore = 1;
 % Determine number of points required in discretization
 noPoints = 100;
 
-timeSeries = linspace(0, totalTime, noPoints);
+timeSeriesExploration = linspace(0, totalTime, noPoints);
 gammaSeries = linspace(0, 2, noPoints);
 ratioSeries = nan(size(gammaSeries));
 positionSeries = nan(size(gammaSeries));
 
-% Build up vectors
+% Compute position and time data for each gamma value
 for i = 1:length(gammaSeries)
-    % Calculate gamma using kExplore
+    % Find gamma value for iteration
     gamma = gammaSeries(i);
 
-    % Calculate ratio using gamma and kExplore
+    % Calculate parameter ratio using gamma and kExplore
     ratioSeries(i) = gamma.^2 ./ kExplore;
 
     % Calculate position based on time and gamma ratio
-    positionSeries(i, :) = generateAnalyticalSolution(timeSeries, gamma, kExplore, x_initial);
+    positionSeries(i, :) = generateAnalyticalSolution(timeSeriesExploration, gamma, kExplore, xInitial);
 end
 
 % Plot ratio of parameters vs position and time
 figure('NumberTitle', 'off', 'Name', 'Function Behavioural Analysis');
-surf(timeSeries, ratioSeries, positionSeries);
+surf(timeSeriesExploration, ratioSeries, positionSeries);
 
 % Decorate surface plot
 colorbar
@@ -212,68 +209,101 @@ zlabel('Position (m)');
 % Adjust camera viewport
 %view([-15 3 4]);
 
-%% Part Three : Numerical Solution (TODO USE EULERS OR ANOTHER METHOD)
+%% Part Three : Numerical Solution using the Euler's Method
 
 % Generate numerical solution for the underdamped case
-[numerical_position, numerical_velocity] = generateNumericalSolution(timeSeries, 0.5, 2, x_initial, v_initial);
+[numericalPosition, numericalVelocity] = generateNumericalSolution(timeSeries, 0.5, 2, xInitial, vInitial, timestep);
 
 % Plot Position vs Time
-figure('NumberTitle', 'off', 'Name', 'Numerical Solution of underdamped case');
+figure('NumberTitle', 'off', 'Name', 'Numerical Solution of Underdamped case');
 subplot(1, 3, 1);
-plot(timeSeries, numerical_position);
+plot(timeSeries, numericalPosition);
 
 % Draw horizontal line at y = 0 to represent convergence value
 yline(0, '--');
 grid on;
 title('Position vs Time');
-xlim([0, 70]);
 xlabel('Time (s)');
+xlim([0, 50]);
 ylabel('Position (m)');
 
 % Plot Velocity vs Time
 subplot(1, 3, 2);
-plot(timeSeries, numerical_velocity, 'r');
+plot(timeSeries, numericalVelocity, 'r');
 grid on;
 title('Velocity vs Time');
-xlim([0, 70]);
 xlabel('Time (s)');
+xlim([0, 50]);
 ylabel('Velocity (m/s)');
 
 % Plot Position vs Velocity
 subplot(1, 3, 3);
-plot(numerical_position, numerical_velocity, 'g', 'LineWidth', 1.2);
+plot(numericalPosition, numericalVelocity, 'g', 'LineWidth', 1.2);
 grid on;
-title('Postion vs Velocity');
+title('Position vs Velocity');
 xlabel('Position (m)');
 ylabel('Velocity (m/s)');
 
-%% Part Four : Analyis of error with varying step size
+%% Part Four : Comparing Analytical and Numerical Solution
+
+gammaComparison = 0.5;
+kComparison = 2;
+
+% Generate analytical solution for the underdamped case
+analyticalPosition = generateAnalyticalSolution(timeSeries, gammaComparison, kComparison, xInitial);
+
+% Generate numerical solution using same parameters
+[numericalPosition, numericalVelocity] = generateNumericalSolution(timeSeries, gammaComparison, kComparison, xInitial, vInitial, timestep);
+
+% Plot Position vs Time
+figure('NumberTitle', 'off', 'Name', 'Analytical vs Numerical Side by Side');
+plot(timeSeries, analyticalPosition, timeSeries, numericalPosition);
+
+% Draw horizontal line at y = 0 to represent convergence value
+yline(0, '--');
+grid on;
+title('Position vs Time');
+subtitle("Time step = " + timestep);
+xlabel('Time (s)');
+xlim([0, 35]);
+ylabel('Position (m)');
+legend('Analytical Solution', "Numerical solution via Euler's method");
+
+%% Part Five : Analyis of error with varying step size
 
 % Pick particular case, underdamped in this case
 gammaErrorAnalysis = 0.1;
 kErrorAnalysis = 3;
 
 % Generate range of step sizes
-stepSizes = linspace(0.001, 1);
+stepSizes = logspace(-3, -2);
 averageErrorAtStepSize = nan(size(stepSizes));
 relativePercentErrorAtStepSize = nan(size(stepSizes));
 
 % Loop over each discretized step size
 for i = 1:length(stepSizes)
-    % Generate timeseries for discretized total time based on step size
+    % Generate discretized time series for total time based on step size
     varyingTimeSeries = 0:stepSizes(i):totalTime;
 
     % Generate analytical solution with timeseries
-    analyticalPos = generateAnalyticalSolution(varyingTimeSeries, gammaErrorAnalysis, kErrorAnalysis, x_initial);
+    analyticalPos = generateAnalyticalSolution(varyingTimeSeries, gammaErrorAnalysis, kErrorAnalysis, xInitial);
 
     % Generate numerical solution with same timeseries
-    [numericalPos, ~] = generateNumericalSolution(varyingTimeSeries, gammaErrorAnalysis, kErrorAnalysis, x_initial, v_initial);
+    [numericalPos, ~] = generateNumericalSolution(varyingTimeSeries, gammaErrorAnalysis, kErrorAnalysis, xInitial, vInitial, stepSizes(i));
 
     % Calculate error at the current step size
-    [averageError, relativeError] = calculateError(analyticalPos, numericalPos.');
+    [averageError, relativeError] = calculateError(analyticalPos, numericalPos);
     averageErrorAtStepSize(i) = averageError;
     relativePercentErrorAtStepSize(i) = relativeError .* 100;
 end
+
+% Determine gradient of average error vs stepsize
+coefficients = polyfit(stepSizes, averageErrorAtStepSize, 1);
+averageErrorGradient = coefficients(1);
+
+% Determine gradient of relative error vs stepsize
+coefficients = polyfit(stepSizes, relativePercentErrorAtStepSize, 1);
+relativeErrorGradient = coefficients(1);
 
 % Plot each type of error vs step size
 % We expect the error to be reduced as the step size is minimised
@@ -284,6 +314,8 @@ title('Average Error vs Step Size');
 xlabel('Step Size (log)');
 ylabel('Average Error');
 legend('Average Error');
+gradientText = sprintf('\\leftarrow gradient = %f', averageErrorGradient);
+text(0.0034, 0.0348, gradientText);
 
 subplot(1, 2, 2);
 loglog(stepSizes, relativePercentErrorAtStepSize, 'r');
@@ -292,69 +324,72 @@ xlabel('Step Size (log)');
 ylabel('Relative Error (%)');
 legend('Relative Error (%)');
 
-%% Part Five : Fourier Analysis of numerical solution
+%% Part Six : Fourier Analysis of numerical solution
 
 % Determine equation parameters for the underdamped case
 gammaFourier = 0.5;
 kFourier = 2;
 
 % Generate positions of analytical solution
-analytical_position = generateAnalyticalSolution(timeSeries, gammaFourier, kFourier, x_initial);
+analytical_position = generateAnalyticalSolution(timeSeries, gammaFourier, kFourier, xInitial);
 
-% Define new domain to transformed into frequency space
-x = linspace(-1,1,length(timeSeries)).' * 10;
-power_real = abs(analytical_position).^2;
+% Calculate power
+powerReal = (abs(analytical_position) .^ 2);
 
-% Plot real power of analytical solution vs x
-figure('NumberTitle', 'off', 'Name', 'Fourier Analysis of critically damped case');
+% Plot real power of analytical solution vs time
+figure('NumberTitle', 'off', 'Name', 'Fourier Analysis of underdamped case');
 subplot(1, 3, 1);
-plot(x, power_real, 'Color','#008000');
-title('Power vs x');
-xlim([-3, 3]);
-xlabel('x');
+plot(timeSeries, powerReal, 'Color','#008000');
+title('Power vs Time');
+xlim([0, 17]);
+xlabel('Time (s)');
 ylabel('Power');
 legend('Power');
 
 % Perform Fast Fourier Transform on Analytical Solution
-N = length(x); % Number of samples
+N = length(analytical_position); % Number of samples
 Y = fft(analytical_position); % Compute Fast Fourier Transformation
-dx = mean(diff(x)); % Determine sample spacing
+% Y = fftshift(analytical_position); % shift frequencies
+Y = Y/N; % normalize for number of samples
+dx = mean(diff(timeSeries)); % Determine sample spacing
 df = 1/(N*dx); % Determine frequency spacing
 fi = (0:(N-1)) - floor(N/2); % Generate unfolded index
 frequency = df * fi; % Generate frequency vector
-power_freq = abs(Y) .^ 2; % Calculate absolute power in frequency space
+powerFreq = abs(Y) .^ 2; % Calculate absolute power in frequency space
 
 % Plot Power vs Frequency
 subplot(1, 3, 2);
-plot(frequency, power_freq);
+plot(frequency, powerFreq);
 title('Power vs Frequency');
 xlabel('Hz');
+xlim([-60, 60]);
 ylabel('Power');
 legend('Power');
 
-% Limit power (in frequency domain) to be positive for frequency analysis
-frequencyPositive = frequency .* (frequency > 0);
-powerPositive = power_freq .* (power_freq > 0);
-
 % Plot power (frequency domain) vs frequency for positive frequencies
 subplot(1, 3, 3);
+frequencyPositive = frequency .* (frequency > 0);
+powerPositive = powerFreq .* (powerFreq > 0);
 plot(frequencyPositive, powerPositive, '-r');
 title('Power vs Frequency');
 subtitle('For positive frequencies');
 xlabel('Hz');
+xlim([48, 51]);
 ylabel('Power');
 legend('Power');
 hold on;
 
 % Estimate center frequency in frequency domain and include in plot
-powerSum_freq = sum(powerPositive);
-weightedPowerSum_freq = sum(powerPositive .* frequencyPositive.');
-expectedCenterFrequency_freq = weightedPowerSum_freq ./ powerSum_freq;
+powerPositiveSum = sum(powerPositive);
+weightedPowerSum_freq = sum(powerPositive .* frequency.');
+expectedCenterFrequency_freq = weightedPowerSum_freq ./ powerPositive;
 
 % Determine FWHM and include in plot
 
-%% Part Six : Function Definitions
 
+%% Part Seven : Function Definitions
+
+% This function generates a numerical solution, given minimal parameters
 function position = generateAnalyticalSolution(timeSeries, gamma, k, x_init)
     %   Derivation
     %   Let x = e^bt
@@ -387,9 +422,9 @@ function position = generateAnalyticalSolution(timeSeries, gamma, k, x_init)
     if discriminant == 0 % critically damped
         % Solve for A and B constants
         A = x_init;
-        B = x_init .* b_1;
-        
-        position = (A + B.*timeSeries) .* exp(b_1 .* timeSeries);
+        B = - A .* b_1;
+
+        position = (A + (B .* timeSeries)) .* exp(b_1 .* timeSeries);
     elseif discriminant > 0 % overdamped
         % Solve for A and B constants
         A = (x_init .* b_2) ./ (b_2 - b_1);
@@ -405,24 +440,37 @@ function position = generateAnalyticalSolution(timeSeries, gamma, k, x_init)
         
         % Solve for A and B constants
         A = x_init;
-        B = -x_init ./ beta;
+        B = (-A .* alpha)./ beta;
 
         position = exp(alpha .* timeSeries) .* ...
             (A.*cos(beta.*timeSeries) + B.*sin(beta.*timeSeries));
     end
 end
 
-function [position, velocity] = generateNumericalSolution(timeSeries, gamma, k, x_initial, v_initial)
-    % Negatively dampened (will converge at y = 0)
-    % Also known as an underdamped system
-    A = [0 1; -k -gamma];
+% This function computes a numerical solution for a given dataset via the
+% Euler's method.
+function [position, velocity] = generateNumericalSolution(timeSeries, gamma, k, xInitial, vInitial, stepSize)
+    % Generate vectors
+    position = nan(size(timeSeries));
+    velocity = nan(size(timeSeries));
 
-    % Use ode45 to numerically solve system of equations
-    [~, x] = ode45(@(t, x) A * x, timeSeries, [x_initial, v_initial]);
-    position = x(:, 1);
-    velocity = x(:, 2);
+    % Define initial values
+    position(1) = xInitial;
+    velocity(1) = vInitial;
+
+    % Inspired by http://www.astro.yale.edu/coppi/astro520/solving_differential_equation.pdf
+    % Numerically solve the position and velocity of the model system using
+    % function arguments
+    for i = 1:length(position) - 1
+        acceleration = -(k .* position(i)) - (gamma .* velocity(i));
+        velocity(i + 1) = velocity(i) + (stepSize .* acceleration);
+        position(i + 1) = position(i) + (stepSize * velocity(i));
+    end
 end
 
+
+% This function calculates the average absolute and relative error between
+% two solutions
 function [averageError, relativeError] = calculateError(analyticalSolution, numericalSolution)
     % Absolute error between analytical and numerical solution
     absoluteError = abs(analyticalSolution - numericalSolution);
