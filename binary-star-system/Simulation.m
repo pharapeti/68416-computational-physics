@@ -15,7 +15,7 @@ classdef Simulation < handle
     properties
         Bodies
     end
-    
+
     methods
         function obj = Simulation(time_step,total_time, G)
             obj.TimeStep = time_step;
@@ -23,12 +23,10 @@ classdef Simulation < handle
             obj.TimeSeries = 0:time_step:total_time;
             obj.G = G;
         end
-       
-        function obj = addBody(obj, body)
-            assert(isa(body,'Body'),...
-                'Individual Constructor Error:  body is of class %s, not a Body object.', class(body));
 
-            obj.Bodies = [obj.Bodies, body];
+        function obj = createBody(obj, mass, init_position, init_velocity)
+            newBody = Body(mass, init_position, init_velocity, obj.TimeSeries);
+            obj.Bodies = [obj.Bodies, newBody];
         end
     end
 end

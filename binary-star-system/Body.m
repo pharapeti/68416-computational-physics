@@ -9,18 +9,23 @@ classdef Body
     end
 
     properties
-        % (1, 1) is x coordinate
-        % (1, 2) is y coordinate
-        Position(1,2) double {mustBeReal, mustBeFinite} % in metres?
-        Velocity(1,2) double {mustBeReal, mustBeFinite} % in metres?
+        Position double % in metres?
+        Velocity double % in metres?
     end
 
     methods
         % Constructor of Body class
-        function obj = Body(mass, position, velocity)
+        function obj = Body(mass, initial_position, initial_velocity, time_series)
             obj.Mass = mass;
-            obj.Position = position;
-            obj.Velocity = velocity;
+
+            % Use time series to generate position and velocity vectors for
+            % each time iteration
+            obj.Position = nan(length(time_series), 2);
+            obj.Velocity = nan(length(time_series), 2);
+
+            % Set initial position and velocity values
+            obj.Position(1, :) = initial_position;
+            obj.Velocity(1, :) = initial_velocity;
         end
     end
 end
