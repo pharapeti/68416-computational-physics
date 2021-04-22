@@ -1,137 +1,85 @@
-%% Part Zero : Setup
-
-% Clear existing workspace
+%% Set up workspace
 clear; clc; close all
 
-% Setup parameters
+%% Set up Simulation
+% Simulation Parameters
 timestep = 1; % timestep (seconds)
-totalTime = 10e4; % total time of simulation (seconds)
+totalTime = 10e2; % total time of simulation (seconds)
 timeSeries = 0:timestep:totalTime;
-
-% Constants
-global G
 G = 6.67408 * 10.^-11;
 
-% Star 1
-star1_mass = 10e8;
-star1_initial_position = [5, 5];
-star1_initial_velocity = [0, 0];
-star1 = Body(star1_mass, star1_initial_position, star1_initial_velocity);
+% Create Simulation
+simulation = Simulation(timestep, totalTime, G);
 
-% Star 2
+% Create Star 1
+star1_mass = 15;
+star1_initial_position = [1, 1];
+star1_initial_velocity = [0, 0];
+simulation.createBody(star1_mass, star1_initial_position, star1_initial_velocity);
+
+% Create Star 2
 star2_mass = 10;
 star2_initial_position = [0, 0];
 star2_initial_velocity = [0, 0];
-star2 = Body(star2_mass, star2_initial_position, star2_initial_velocity);
+simulation.createBody(star2_mass, star2_initial_position, star2_initial_velocity);
 
 % Set up Star 2 with velocities, such that it orbits Star 1
-star2.Velocity = initialVelocityRequiredForOrbit(star1, star2);
+% simulation.Bodies(2).Velocity(1:0) = initialVelocityRequiredForOrbit(simulation, simulation.Bodies(1), simulation.Bodies(1));
 
-% Package stars of system
-starsInSystem = [star1, star2];
+%% Solve System
+solveSystemNumerically(simulation);
 
-solution = generateNumericalSolution(starsInSystem, timeSeries, timestep);
-star_1_motion = solution(:, 1:4);
-star_2_motion = solution(:, 5: 8);
-
+%% Visualise System
+ 
 figure(1);
-plot3(timeSeries, star_1_motion(:, 1), star_1_motion(:, 2));
+plot3(simulation.TimeSeries, simulation.Bodies(1).Position(:, 1), simulation.Bodies(1).Position(:, 2));
 grid on;
-title('Star 1 - X,Y vs Time');
+title('Star 1 - Position X,Y vs Time');
 
 figure(2);
-plot3(timeSeries, star_2_motion(:, 1), star_2_motion(:, 2));
+plot3(simulation.TimeSeries, simulation.Bodies(2).Position(:, 1), simulation.Bodies(2).Position(:, 2));
 grid on;
-title('Star 2 - X,Y vs Time');
+title('Star 2 - Position X,Y vs Time');
 
 figure(3);
-plot(star_2_motion(:, 1), star_2_motion(:, 2));
+plot(simulation.Bodies(1).Position(:, 1), simulation.Bodies(1).Position(:, 2));
 grid on;
-title('Star 2 - X position vs Y position');
-% 
-% subplot(1, 8, 2);
-% plot(timeSeries, positionXOf2);
-% title('PosX of 2');
-% 
-% subplot(1, 8, 3);
-% plot(timeSeries, positionYOf1);
-% title('PosY of 1');
-% 
-% subplot(1, 8, 4);
-% plot(timeSeries, positionYOf2);
-% title('PosY of 2');
-% 
-% subplot(1, 8, 5);
-% plot(timeSeries, velocityXOf1);
-% title('VelX of 1');
-% 
-% subplot(1, 8, 6);
-% plot(timeSeries, velocityXOf2);
-% title('VelX of 2');
-% 
-% subplot(1, 8, 7);
-% plot(timeSeries, velocityYOf1);
-% title('VelY of 1');
-% 
-% subplot(1, 8, 8);
-% plot(timeSeries, velocityYOf2);
-% title('VelY of 2');
+title('Star 1 - Position X vs Position Y');
+
+figure(4);
+plot(simulation.Bodies(2).Position(:, 1), simulation.Bodies(2).Position(:, 2));
+grid on;
+title('Star 2 - Position X vs Position Y');
+
+%% Functions
 
 % This function computes a numerical solution for a given dataset via the
 % Euler's method.
-function starMotionArray = generateNumericalSolution(starsInSystem, timeSeries, stepSize)
-    global G
-
+function solveSystemNumerically(simulation)
     % Stars
-    star1 = starsInSystem(1);
-    star2 = starsInSystem(2);
+    star1 = simulation.Bodies(1);
+    star2 = simulation.Bodies(2);
 
-    % Generate data structure for each star
-    % Rows represent time steps
-    star1_Motion = nan(length(timeSeries), 4);
-    star2_Motion = nan(length(timeSeries), 4);
-    
-    % Column 1 is position in x direction
-    star1_Motion(1, 1) = star1.Position(1);
-    star2_Motion(1, 1) = star2.Position(1);
-    
-    % Column 2 is position in y direction
-    star1_Motion(1, 2) = star1.Position(2);
-    star2_Motion(1, 2) = star2.Position(2);
-    
-    % Column 3 is velocity in x direction
-    star1_Motion(1, 3) = star1.Velocity(1);
-    star2_Motion(1, 3) = star2.Velocity(1);
-    
-    % Column 4 is velocity in y direction
-    star1_Motion(1, 4) = star1.Velocity(2);
-    star2_Motion(1, 4) = star2.Velocity(2);
-
-    % Stars
-    star1 = starsInSystem(1);
-    star2 = starsInSystem(2);
-    
     % Gravitational Factor
-    g_factor = G * star1.Mass * star2.Mass;
+    g_factor = simulation.G * star1.Mass * star2.Mass;
 
     % Inspired by http://www.astro.yale.edu/coppi/astro520/solving_differential_equation.pdf
     % Numerically solve the position and velocity of the model system using
     % function arguments
-    for i = 1:length(timeSeries) - 1
+    for i = 1:length(simulation.TimeSeries) - 1
         % Calculate distance between star 1 and 2
-        vector_r = calculateDistanceBetweenStars(star1, star2);
-        vector_r_length = norm(vector_r);
-        unit_vector_r = vector_r ./ vector_r_length;
+        distance = calculateDistanceBetweenStars(i, star1, star2);
+        distance_vector_length = norm(distance);
+        unit_distance = distance ./ distance_vector_length;
 
         % Using distance, calculate force on each star
-        forceOn1 = (g_factor ./ (vector_r_length .^ 2)) .* unit_vector_r;
-        
+        forceOn1 = (g_factor ./ (distance_vector_length .^ 2)) .* unit_distance;
+
         % Split forces into (x, y) directions
         forceXOn1 = forceOn1(1);
         forceYOn1 = forceOn1(2);
 
-        % Newton's Second Law
-        % Equal and opposite reaction force
+        % Newton's Second Law - equal and opposite reaction force
         forceXOn2 = - forceXOn1;
         forceYOn2 = - forceYOn1;
 
@@ -145,46 +93,40 @@ function starMotionArray = generateNumericalSolution(starsInSystem, timeSeries, 
         
         % Update Velocities
         % Star 1
-        star1_Motion(i + 1, 3) = star1_Motion(i, 3) + (stepSize .* accelerationXOf1);
-        star1_Motion(i + 1, 4) = star1_Motion(i, 4) + (stepSize .* accelerationYOf1);
+        star1.Velocity(i + 1, 1) = star1.Velocity(i, 1) + (simulation.TimeStep .* accelerationXOf1);
+        star1.Velocity(i + 1, 2) = star1.Velocity(i, 2) + (simulation.TimeStep .* accelerationYOf1);
         
         % Star 2
-        star2_Motion(i + 1, 3) = star2_Motion(i, 3) + (stepSize .* accelerationXOf2);
-        star2_Motion(i + 1, 4) = star2_Motion(i, 4) + (stepSize .* accelerationYOf2);
+        star2.Velocity(i + 1, 1) = star2.Velocity(i, 1) + (simulation.TimeStep .* accelerationXOf2);
+        star2.Velocity(i + 1, 2) = star2.Velocity(i, 2) + (simulation.TimeStep .* accelerationYOf2);
 
         % Update Positions
         % Star 1
-        star1_Motion(i + 1, 1) = star1_Motion(i, 1) + (stepSize .* star1_Motion(i, 3));
-        star1_Motion(i + 1, 2) = star1_Motion(i, 2) + (stepSize .* star1_Motion(i, 4));
+        star1.Position(i + 1, 1) = star1.Position(i, 1) + (simulation.TimeStep .* star1.Velocity(i, 1));
+        star1.Position(i + 1, 2) = star1.Position(i, 2) + (simulation.TimeStep .* star1.Velocity(i, 2));
         
         % Star 2
-        star2_Motion(i + 1, 1) = star2_Motion(i, 1) + (stepSize .* star2_Motion(i, 3));
-        star2_Motion(i + 1, 2) = star2_Motion(i, 2) + (stepSize .* star2_Motion(i, 4));
+        star2.Position(i + 1, 1) = star2.Position(i, 1) + (simulation.TimeStep .* star2.Velocity(i, 1));
+        star2.Position(i + 1, 2) = star2.Position(i, 2) + (simulation.TimeStep .* star2.Velocity(i, 2));
     end
-
-    % Package and return motions of stars
-    starMotionArray = [star1_Motion, star2_Motion];
+    
+    % Persist changes to simulation - due to inability to edit by reference
+    simulation.Bodies(1) = star1;
+    simulation.Bodies(2) = star2;
 end
 
 % Returns 1x2 array of distances in (x, y) respectively
-function r = calculateDistanceBetweenStars(star_A, star_B)
-    % TODO just reference these directly instead of assigned to temporary
-    % variable
-    starA_x = star_A.Position(1);
-    starA_y = star_A.Position(2);
-    
-    starB_x = star_B.Position(1);
-    starB_y = star_B.Position(2);
+function r = calculateDistanceBetweenStars(i, star_A, star_B)
+    starA = star_A.Position(i, :);
+    starB = star_B.Position(i, :);
 
-    r = [starB_x - starA_x, starB_y - starA_y];
+    r = starB - starA;
 end
 
 % Returns the orbital velocity required for star B to orbit star A
 % Only holds true when the mass of Star A is much greater than that of Star
 % B
-function velocity = initialVelocityRequiredForOrbit(star_A, star_B)
-    global G
-
-    r = abs(calculateDistanceBetweenStars(star_A, star_B));
-    velocity = sqrt((G * star_A.Mass) ./ r);
+function velocity = initialVelocityRequiredForOrbit(simulation, star_A, star_B)
+    r = abs(calculateDistanceBetweenStars(1, star_A, star_B));
+    velocity = sqrt((simulation.G * star_A.Mass) ./ r);
 end
