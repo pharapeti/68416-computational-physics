@@ -43,6 +43,11 @@ figure(2);
 plot3(timeSeries, star_2_motion(:, 1), star_2_motion(:, 2));
 grid on;
 title('Star 2 - X,Y vs Time');
+
+figure(3);
+plot(star_2_motion(:, 1), star_2_motion(:, 2));
+grid on;
+title('Star 2 - X position vs Y position');
 % 
 % subplot(1, 8, 2);
 % plot(timeSeries, positionXOf2);
