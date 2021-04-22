@@ -13,7 +13,8 @@ classdef Simulation < handle
     end
 
     properties
-        Bodies
+        Bodies        % array of Bodies in the simulation
+        Barycenter    % (x, y) for in iteration of the simulation
     end
 
     methods
@@ -22,6 +23,9 @@ classdef Simulation < handle
             obj.TotalTime = total_time;
             obj.TimeSeries = 0:time_step:total_time;
             obj.G = G;
+
+            obj.Bodies = [];
+            obj.Barycenter = nan(length(obj.TimeSeries), 2);
         end
 
         function obj = createBody(obj, mass, init_position, init_velocity)

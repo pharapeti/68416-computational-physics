@@ -13,7 +13,7 @@ simulation = Simulation(timestep, totalTime, G);
 
 % Create Star 1
 star1_mass = 15;
-star1_initial_position = [1, 1];
+star1_initial_position = [100, 100];
 star1_initial_velocity = [0, 0];
 simulation.createBody(star1_mass, star1_initial_position, star1_initial_velocity);
 
@@ -51,6 +51,11 @@ plot(simulation.Bodies(2).Position(:, 1), simulation.Bodies(2).Position(:, 2));
 grid on;
 title('Star 2 - Position X vs Position Y');
 
+figure(5);
+plot(simulation.Barycenter(:, 1), simulation.Barycenter(:, 2));
+grid on;
+title('Barycenter (x, y)');
+
 %% Functions
 
 % This function computes a numerical solution for a given dataset via the
@@ -59,6 +64,9 @@ function solveSystemNumerically(simulation)
     % Stars
     star1 = simulation.Bodies(1);
     star2 = simulation.Bodies(2);
+    
+    % Set up data structure to record barycenter across time
+    barycenterHistory = nan(length(simulation.TimeSeries), 2);
 
     % Gravitational Factor
     g_factor = simulation.G * star1.Mass * star2.Mass;
@@ -108,11 +116,14 @@ function solveSystemNumerically(simulation)
         % Star 2
         star2.Position(i + 1, 1) = star2.Position(i, 1) + (simulation.TimeStep .* star2.Velocity(i, 1));
         star2.Position(i + 1, 2) = star2.Position(i, 2) + (simulation.TimeStep .* star2.Velocity(i, 2));
+
+        barycenterHistory(i, :) = barycenterFromOrigin(i, star1, star2);
     end
-    
+
     % Persist changes to simulation - due to inability to edit by reference
     simulation.Bodies(1) = star1;
     simulation.Bodies(2) = star2;
+    simulation.Barycenter = barycenterHistory;
 end
 
 % Returns 1x2 array of distances in (x, y) respectively
@@ -129,4 +140,30 @@ end
 function velocity = initialVelocityRequiredForOrbit(simulation, star_A, star_B)
     r = abs(calculateDistanceBetweenStars(1, star_A, star_B));
     velocity = sqrt((simulation.G * star_A.Mass) ./ r);
+end
+
+function origin_to_barycenter = barycenterFromOrigin(i, star1, star2)
+    % From perspective of star 1
+    distance_between_stars = calculateDistanceBetweenStars(i, star1, star2);
+    mass_ratio = star1.Mass ./ star2.Mass;
+
+    % We should calculate the barycenter in respect to the (x, y) 
+    % coordinate origin to allow our measurements to be agnostic to a
+    % specific body in the system.
+    
+    % We can acheive this by imagine the vector Rb to be the vector from
+    % the coordinate origin (x, y = [0, 0]) to the position of a particular
+    % body.
+    origin_to_star_1 = star1.Position(i);
+    
+    % Then we can imagine another vector Rc to be the vector from the
+    % position of a chosen body in the system to the position of the
+    % system's barycenter.
+    star_1_to_barycenter = distance_between_stars ./ (1 + mass_ratio);
+    
+    % Using these two vectors (Rb and Rc), we can compose a resultant
+    % vector Rbc which is the sum of Rb and Rc. The vector addition will
+    % result in Rbc being to vector from the coordinate origin (xy = [0,
+    % 0]) to the position of the barycenter of the system.
+    origin_to_barycenter = origin_to_star_1 + star_1_to_barycenter;
 end
