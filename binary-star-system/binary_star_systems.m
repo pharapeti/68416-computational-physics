@@ -32,27 +32,27 @@ solveSystemNumerically(simulation);
 %% Visualise System
  
 figure(1);
-plot3(simulation.TimeSeries, simulation.Bodies(1).Position(:, 1), simulation.Bodies(1).Position(:, 2));
+plot3(simulation.TimeSeries, simulation.Bodies(1).Position.X, simulation.Bodies(1).Position.Y);
 grid on;
 title('Star 1 - Position X,Y vs Time');
 
 figure(2);
-plot3(simulation.TimeSeries, simulation.Bodies(2).Position(:, 1), simulation.Bodies(2).Position(:, 2));
+plot3(simulation.TimeSeries, simulation.Bodies(2).Position.X, simulation.Bodies(2).Position.Y);
 grid on;
 title('Star 2 - Position X,Y vs Time');
 
 figure(3);
-plot(simulation.Bodies(1).Position(:, 1), simulation.Bodies(1).Position(:, 2));
+plot(simulation.Bodies(1).Position.X, simulation.Bodies(1).Position.Y);
 grid on;
 title('Star 1 - Position X vs Position Y');
 
 figure(4);
-plot(simulation.Bodies(2).Position(:, 1), simulation.Bodies(2).Position(:, 2));
+plot(simulation.Bodies(2).Position.X, simulation.Bodies(2).Position.Y);
 grid on;
 title('Star 2 - Position X vs Position Y');
 
 figure(5);
-plot(simulation.Barycenter(:, 1), simulation.Barycenter(:, 2));
+plot(simulation.Barycenter.X, simulation.Barycenter.Y);
 grid on;
 title('Barycenter (x, y)');
 
@@ -66,7 +66,7 @@ function solveSystemNumerically(simulation)
     star2 = simulation.Bodies(2);
     
     % Set up data structure to record barycenter across time
-    barycenterHistory = nan(length(simulation.TimeSeries), 2);
+    barycenterHistory = Barycenter();
 
     % Gravitational Factor
     g_factor = simulation.G * star1.Mass * star2.Mass;
@@ -101,35 +101,38 @@ function solveSystemNumerically(simulation)
         
         % Update Velocities
         % Star 1
-        star1.Velocity(i + 1, 1) = star1.Velocity(i, 1) + (simulation.TimeStep .* accelerationXOf1);
-        star1.Velocity(i + 1, 2) = star1.Velocity(i, 2) + (simulation.TimeStep .* accelerationYOf1);
+        star1.Velocity.X(i + 1) = star1.Velocity.X(i) + (simulation.TimeStep .* accelerationXOf1);
+        star1.Velocity.Y(i + 1) = star1.Velocity.Y(i) + (simulation.TimeStep .* accelerationYOf1);
         
         % Star 2
-        star2.Velocity(i + 1, 1) = star2.Velocity(i, 1) + (simulation.TimeStep .* accelerationXOf2);
-        star2.Velocity(i + 1, 2) = star2.Velocity(i, 2) + (simulation.TimeStep .* accelerationYOf2);
+        star2.Velocity.X(i + 1) = star2.Velocity.X(i) + (simulation.TimeStep .* accelerationXOf2);
+        star2.Velocity.Y(i + 1) = star2.Velocity.Y(i) + (simulation.TimeStep .* accelerationYOf2);
 
         % Update Positions
         % Star 1
-        star1.Position(i + 1, 1) = star1.Position(i, 1) + (simulation.TimeStep .* star1.Velocity(i, 1));
-        star1.Position(i + 1, 2) = star1.Position(i, 2) + (simulation.TimeStep .* star1.Velocity(i, 2));
+        star1.Position.X(i + 1) = star1.Position.X(i) + (simulation.TimeStep .* star1.Velocity.X(i));
+        star1.Position.Y(i + 1) = star1.Position.Y(i) + (simulation.TimeStep .* star1.Velocity.Y(i));
         
         % Star 2
-        star2.Position(i + 1, 1) = star2.Position(i, 1) + (simulation.TimeStep .* star2.Velocity(i, 1));
-        star2.Position(i + 1, 2) = star2.Position(i, 2) + (simulation.TimeStep .* star2.Velocity(i, 2));
+        star2.Position.X(i + 1) = star2.Position.X(i) + (simulation.TimeStep .* star2.Velocity.X(i));
+        star2.Position.Y(i + 1) = star2.Position.Y(i) + (simulation.TimeStep .* star2.Velocity.Y(i));
 
-        barycenterHistory(i, :) = barycenterFromOrigin(i, star1, star2);
+        barycenter = barycenterFromOrigin(i, star1, star2);
+        barycenterHistory.X(i) = barycenter(1);
+        barycenterHistory.Y(i) = barycenter(2);
     end
 
     % Persist changes to simulation - due to inability to edit by reference
     simulation.Bodies(1) = star1;
     simulation.Bodies(2) = star2;
-    simulation.Barycenter = barycenterHistory;
+    simulation.Barycenter.X = barycenterHistory.X;
+    simulation.Barycenter.Y = barycenterHistory.Y;
 end
 
 % Returns 1x2 array of distances in (x, y) respectively
 function r = calculateDistanceBetweenStars(i, star_A, star_B)
-    starA = star_A.Position(i, :);
-    starB = star_B.Position(i, :);
+    starA = [star_A.Position.X(i), star_A.Position.Y(i)];
+    starB = [star_B.Position.X(i), star_B.Position.Y(i)];
 
     r = starB - starA;
 end
@@ -154,7 +157,7 @@ function origin_to_barycenter = barycenterFromOrigin(i, star1, star2)
     % We can acheive this by imagine the vector Rb to be the vector from
     % the coordinate origin (x, y = [0, 0]) to the position of a particular
     % body.
-    origin_to_star_1 = star1.Position(i);
+    origin_to_star_1 = [star1.Position.X(i), star1.Position.Y(i)];
     
     % Then we can imagine another vector Rc to be the vector from the
     % position of a chosen body in the system to the position of the

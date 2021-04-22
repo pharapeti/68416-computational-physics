@@ -25,7 +25,7 @@ classdef Simulation < handle
             obj.G = G;
 
             obj.Bodies = [];
-            obj.Barycenter = nan(length(obj.TimeSeries), 2);
+            obj.Barycenter = Barycenter();
         end
 
         function obj = createBody(obj, mass, init_position, init_velocity)

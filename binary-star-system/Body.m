@@ -9,8 +9,8 @@ classdef Body
     end
 
     properties
-        Position double % in metres?
-        Velocity double % in metres?
+        Position % in metres?
+        Velocity % in metres?
     end
 
     methods
@@ -20,12 +20,18 @@ classdef Body
 
             % Use time series to generate position and velocity vectors for
             % each time iteration
-            obj.Position = nan(length(time_series), 2);
-            obj.Velocity = nan(length(time_series), 2);
+            obj.Position.X = nan(1, length(time_series));
+            obj.Position.Y = nan(1, length(time_series));
+
+            obj.Velocity.X = nan(1, length(time_series));
+            obj.Velocity.Y = nan(1, length(time_series));
 
             % Set initial position and velocity values
-            obj.Position(1, :) = initial_position;
-            obj.Velocity(1, :) = initial_velocity;
+            obj.Position.X(1) = initial_position(1);
+            obj.Position.Y(1) = initial_position(2);
+
+            obj.Velocity.X(1) = initial_velocity(1);
+            obj.Velocity.Y(1) = initial_velocity(2);
         end
     end
 end
