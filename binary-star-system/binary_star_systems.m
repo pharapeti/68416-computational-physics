@@ -3,8 +3,8 @@ clear; clc; close all
 
 %% Set up Simulation
 % Simulation Parameters
-timestep = 1; % timestep (seconds)
-totalTime = 10e2; % total time of simulation (seconds)
+timestep = 60 * 60 * 24; % timestep (seconds)
+totalTime = 60 * 60 * 24 * 365; % total time of simulation (seconds)
 timeSeries = 0:timestep:totalTime;
 G = 6.67408 * 10.^-11;
 
@@ -12,15 +12,15 @@ G = 6.67408 * 10.^-11;
 simulation = Simulation(timestep, totalTime, G);
 
 % Create Star 1
-star1_mass = 15;
-star1_initial_position = [100, 100];
-star1_initial_velocity = [0, 0];
+star1_mass = 5.972 * 10e24; % mass (kg)
+star1_initial_position = [0, 0]; % position (m)
+star1_initial_velocity = [0, 0]; % velocity (m/s)
 simulation.createBody(star1_mass, star1_initial_position, star1_initial_velocity);
 
 % Create Star 2
-star2_mass = 10;
-star2_initial_position = [0, 0];
-star2_initial_velocity = [0, 0];
+star2_mass = 10; % mass (kg)
+star2_initial_position = [6.59 * 10e6, 0]; % position (m)
+star2_initial_velocity = [0, 7780]; % velocity (m/s)
 simulation.createBody(star2_mass, star2_initial_position, star2_initial_velocity);
 
 % Set up Star 2 with velocities, such that it orbits Star 1
@@ -30,7 +30,7 @@ simulation.createBody(star2_mass, star2_initial_position, star2_initial_velocity
 solveSystemNumerically(simulation);
 
 %% Visualise System
- 
+
 figure(1);
 plot3(simulation.TimeSeries, simulation.Bodies(1).Position.X, simulation.Bodies(1).Position.Y);
 grid on;
@@ -52,7 +52,7 @@ grid on;
 title('Star 2 - Position X vs Position Y');
 
 figure(5);
-plot(simulation.Barycenter.X, simulation.Barycenter.Y);
+plot3 (simulation.TimeSeries, simulation.Barycenter.X, simulation.Barycenter.Y);
 grid on;
 title('Barycenter (x, y)');
 
@@ -64,12 +64,19 @@ function solveSystemNumerically(simulation)
     % Stars
     star1 = simulation.Bodies(1);
     star2 = simulation.Bodies(2);
-    
+
     % Set up data structure to record barycenter across time
     barycenterHistory = Barycenter();
+    barycenterHistory.X = nan(1, length(simulation.TimeSeries));
+    barycenterHistory.Y = nan(1, length(simulation.TimeSeries));
 
     % Gravitational Factor
     g_factor = simulation.G * star1.Mass * star2.Mass;
+
+    % Find initial barycenter
+    iniital_barycenter = barycenterFromOrigin(1, star1, star2);
+    barycenterHistory.X(1) = iniital_barycenter(1);
+    barycenterHistory.Y(1) = iniital_barycenter(2);
 
     % Inspired by http://www.astro.yale.edu/coppi/astro520/solving_differential_equation.pdf
     % Numerically solve the position and velocity of the model system using
