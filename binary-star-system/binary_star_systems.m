@@ -3,8 +3,8 @@ clear; clc; close all
 
 %% Set up Simulation
 % Simulation Parameters
-timestep = 60 * 60 * 24; % timestep (seconds)
-totalTime = 60 * 60 * 24 * 365; % total time of simulation (seconds)
+timestep = 60; % timestep (seconds)
+totalTime = 60 * 60 * 24 * 30; % total time of simulation (seconds)
 timeSeries = 0:timestep:totalTime;
 G = 6.67408 * 10.^-11;
 
@@ -12,15 +12,15 @@ G = 6.67408 * 10.^-11;
 simulation = Simulation(timestep, totalTime, G);
 
 % Create Star 1
-star1_mass = 5.972 * 10e24; % mass (kg)
+star1_mass = 5.97219 * 10.^24; % mass (kg)
 star1_initial_position = [0, 0]; % position (m)
 star1_initial_velocity = [0, 0]; % velocity (m/s)
 simulation.createBody(star1_mass, star1_initial_position, star1_initial_velocity);
 
 % Create Star 2
-star2_mass = 10; % mass (kg)
-star2_initial_position = [6.59 * 10e6, 0]; % position (m)
-star2_initial_velocity = [0, 7780]; % velocity (m/s)
+star2_mass = 7.34767309 * 10.^22; % mass (kg)
+star2_initial_position = [384400 * 10.^3, 0]; % position (m)
+star2_initial_velocity = [0, 1.022 * 10.^3]; % velocity (m/s)
 simulation.createBody(star2_mass, star2_initial_position, star2_initial_velocity);
 
 % Set up Star 2 with velocities, such that it orbits Star 1
@@ -32,29 +32,29 @@ solveSystemNumerically(simulation);
 %% Visualise System
 
 figure(1);
-plot3(simulation.TimeSeries, simulation.Bodies(1).Position.X, simulation.Bodies(1).Position.Y);
-grid on;
-title('Star 1 - Position X,Y vs Time');
+plot(simulation.Bodies(1).Position.X, simulation.Bodies(1).Position.Y, 'r', ...
+     simulation.Bodies(2).Position.X, simulation.Bodies(2).Position.Y, 'b', ...
+     simulation.Barycenter.X, simulation.Barycenter.Y, '-')
+title('Orbit of Moon about the Earth');
+xlabel('Position X');
+ylabel('Position Y');
+legend('Earth', 'Moon', 'Barycenter');
 
 figure(2);
-plot3(simulation.TimeSeries, simulation.Bodies(2).Position.X, simulation.Bodies(2).Position.Y);
-grid on;
-title('Star 2 - Position X,Y vs Time');
+plot(simulation.Bodies(1).Position.X, simulation.Bodies(1).Position.Y);
+% xlim([-10.^6, 10.^6]);
+% ylim([-10.^6, 10.^6]);
+title('Earth');
+xlabel('Position X');
+ylabel('Position Y');
 
 figure(3);
-plot(simulation.Bodies(1).Position.X, simulation.Bodies(1).Position.Y);
-grid on;
-title('Star 1 - Position X vs Position Y');
-
-figure(4);
 plot(simulation.Bodies(2).Position.X, simulation.Bodies(2).Position.Y);
-grid on;
-title('Star 2 - Position X vs Position Y');
-
-figure(5);
-plot3 (simulation.TimeSeries, simulation.Barycenter.X, simulation.Barycenter.Y);
-grid on;
-title('Barycenter (x, y)');
+% xlim([-10.^6, 10.^6]);
+% ylim([-10.^6, 10.^6]);
+title('Moon');
+xlabel('Position X');
+ylabel('Position Y');
 
 %% Functions
 
@@ -105,7 +105,7 @@ function solveSystemNumerically(simulation)
 
         accelerationXOf2 = forceXOn2 ./ star2.Mass;
         accelerationYOf2 = forceYOn2 ./ star2.Mass;
-        
+
         % Update Velocities
         % Star 1
         star1.Velocity.X(i + 1) = star1.Velocity.X(i) + (simulation.TimeStep .* accelerationXOf1);
