@@ -3,7 +3,7 @@ clear; clc; close all
 
 %% Set up Simulation
 % Simulation Parameters
-timestep = 60; % timestep (seconds)
+timestep = 120; % timestep (seconds)
 totalTime = 60 * 60 * 24 * 30; % total time of simulation (seconds)
 timeSeries = 0:timestep:totalTime;
 G = 6.67408 * 10.^-11;
@@ -13,7 +13,7 @@ simulation = Simulation(timestep, totalTime, G);
 
 % Create Star 1
 star1_mass = 5.97219 * 10.^24; % mass (kg)
-star1_initial_position = [0, 0]; % position (m)
+star1_initial_position = [4000, 0]; % position (m)
 star1_initial_velocity = [0, 0]; % velocity (m/s)
 simulation.createBody(star1_mass, star1_initial_position, star1_initial_velocity);
 
@@ -56,6 +56,28 @@ title('Moon');
 xlabel('Position X');
 ylabel('Position Y');
 
+figure(4);
+plot(simulation.TimeSeries, simulation.Bodies(1).PE);
+hold on;
+plot(simulation.TimeSeries, simulation.Bodies(2).KE, 'r');
+% xlim([-10.^6, 10.^6]);
+% ylim([-10.^6, 10.^6]);
+title('KE and PE of Earth');
+legend('PE', 'KE');
+xlabel('Time (s)');
+ylabel('Energy (j)');
+
+figure(5);
+plot(simulation.TimeSeries, simulation.Bodies(2).PE);
+hold on;
+plot(simulation.TimeSeries, simulation.Bodies(2).KE, 'r');
+% xlim([-10.^6, 10.^6]);
+% ylim([-10.^6, 10.^6]);
+title('KE and PE of Moon');
+legend('PE', 'KE');
+xlabel('Time (s)');
+ylabel('Energy (j)');
+
 %% Functions
 
 % This function computes a numerical solution for a given dataset via the
@@ -83,7 +105,7 @@ function solveSystemNumerically(simulation)
     % function arguments
     for i = 1:length(simulation.TimeSeries) - 1
         % Calculate distance between star 1 and 2
-        distance = calculateDistanceBetweenStars(i, star1, star2);
+        distance = calculateDistanceBetweenBodies(i, star1, star2);
         distance_vector_length = norm(distance);
         unit_distance = distance ./ distance_vector_length;
 
@@ -127,6 +149,14 @@ function solveSystemNumerically(simulation)
         barycenter = barycenterFromOrigin(i, star1, star2);
         barycenterHistory.X(i) = barycenter(1);
         barycenterHistory.Y(i) = barycenter(2);
+
+        % Calculate Kinetic Energy at this timestep
+        star1.KE(i) = calculateKE(i, star1);
+        star2.KE(i) = calculateKE(i, star2);
+
+        % Calculate Graviational Potential Energy at this timestep
+        star1.PE(i) = calculatePE(i, star1, star2, simulation.G);
+        star2.PE(i) = calculatePE(i, star2, star1, simulation.G);
     end
 
     % Persist changes to simulation - due to inability to edit by reference
@@ -137,43 +167,48 @@ function solveSystemNumerically(simulation)
 end
 
 % Returns 1x2 array of distances in (x, y) respectively
-function r = calculateDistanceBetweenStars(i, star_A, star_B)
-    starA = [star_A.Position.X(i), star_A.Position.Y(i)];
-    starB = [star_B.Position.X(i), star_B.Position.Y(i)];
+function r = calculateDistanceBetweenBodies(i, bodyA, bodyB)
+    starA = [bodyA.Position.X(i), bodyA.Position.Y(i)];
+    starB = [bodyB.Position.X(i), bodyB.Position.Y(i)];
 
     r = starB - starA;
 end
 
-% Returns the orbital velocity required for star B to orbit star A
-% Only holds true when the mass of Star A is much greater than that of Star
-% B
-function velocity = initialVelocityRequiredForOrbit(simulation, star_A, star_B)
-    r = abs(calculateDistanceBetweenStars(1, star_A, star_B));
-    velocity = sqrt((simulation.G * star_A.Mass) ./ r);
-end
-
-function origin_to_barycenter = barycenterFromOrigin(i, star1, star2)
+function origin_to_barycenter = barycenterFromOrigin(i, bodyA, bodyB)
     % From perspective of star 1
-    distance_between_stars = calculateDistanceBetweenStars(i, star1, star2);
-    mass_ratio = star1.Mass ./ star2.Mass;
+    distance_between_bodies = calculateDistanceBetweenBodies(i, bodyA, bodyB);
+    mass_ratio = bodyA.Mass ./ bodyB.Mass;
 
     % We should calculate the barycenter in respect to the (x, y) 
     % coordinate origin to allow our measurements to be agnostic to a
     % specific body in the system.
-    
+
     % We can acheive this by imagine the vector Rb to be the vector from
     % the coordinate origin (x, y = [0, 0]) to the position of a particular
     % body.
-    origin_to_star_1 = [star1.Position.X(i), star1.Position.Y(i)];
-    
+    origin_to_star_A = [bodyA.Position.X(i), bodyA.Position.Y(i)];
+
     % Then we can imagine another vector Rc to be the vector from the
     % position of a chosen body in the system to the position of the
     % system's barycenter.
-    star_1_to_barycenter = distance_between_stars ./ (1 + mass_ratio);
+    star_A_to_barycenter = distance_between_bodies ./ (1 + mass_ratio);
     
     % Using these two vectors (Rb and Rc), we can compose a resultant
     % vector Rbc which is the sum of Rb and Rc. The vector addition will
     % result in Rbc being to vector from the coordinate origin (xy = [0,
     % 0]) to the position of the barycenter of the system.
-    origin_to_barycenter = origin_to_star_1 + star_1_to_barycenter;
+    origin_to_barycenter = origin_to_star_A + star_A_to_barycenter;
+end
+
+% Calculates the Kinetic Energy for a given star
+function KE = calculateKE(i, body)
+    KE = 0.5 * body.Mass * ...
+        (body.Position.X(i) .^2 + body.Position.Y(i) .^2);
+end
+
+% Calculates the Gravitational Potential Energy between two stars
+function PE = calculatePE(i, bodyA, bodyB, G)
+    r = calculateDistanceBetweenBodies(i, bodyA, bodyB);
+    r_length = norm(r);
+    PE = (-G .* bodyA.Mass .* bodyB.Mass) ./ r_length;
 end

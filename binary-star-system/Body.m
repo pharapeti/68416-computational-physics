@@ -11,6 +11,8 @@ classdef Body
     properties
         Position % in metres?
         Velocity % in metres?
+        KE
+        PE
     end
 
     methods
@@ -26,12 +28,19 @@ classdef Body
             obj.Velocity.X = nan(1, length(time_series));
             obj.Velocity.Y = nan(1, length(time_series));
 
+            obj.KE = nan(1, length(time_series));
+            obj.PE = nan(1, length(time_series));
+
             % Set initial position and velocity values
             obj.Position.X(1) = initial_position(1);
             obj.Position.Y(1) = initial_position(2);
 
             obj.Velocity.X(1) = initial_velocity(1);
             obj.Velocity.Y(1) = initial_velocity(2);
+
+            % TODO: Calculate this based on initial conditions
+            obj.KE(1) = 0;
+            obj.PE(1) = 0;
         end
     end
 end
