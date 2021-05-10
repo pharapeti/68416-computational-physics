@@ -121,7 +121,7 @@ relative_error = delta_E ./ final_energy;
 
 %% Validate Results with final position of the Moon convergence
 
-step_sizes = logspace(2, 4);
+step_sizes = logspace(2, 5);
 final_positions_of_moon = nan(length(step_sizes), 2);
 
 for i = 1:length(step_sizes)
