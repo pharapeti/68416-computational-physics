@@ -19,13 +19,15 @@ star1_initial_position = [-4675 * 10.^3, 0]; % position (m)
 
 % Earth orbit's the Earth-Moon Barycenter at 45km/h = 12.5m/ss
 star1_initial_velocity = [0, 12.5]; % velocity (m/s)
-simulation.createBody(star1_mass, star1_initial_position, star1_initial_velocity);
+star1_initial_acceleration = [0, 0]; % acceleration (m/s/s)
+simulation.createBody(star1_mass, star1_initial_position, star1_initial_velocity, star1_initial_acceleration);
 
 % Create Star 2
 star2_mass = 7.34767309 * 10.^22; % mass (kg)
 star2_initial_position = [384400 * 10.^3, 0]; % position (m)
 star2_initial_velocity = [0, 1.022 * 10.^3]; % velocity (m/s)
-simulation.createBody(star2_mass, star2_initial_position, star2_initial_velocity);
+star2_initial_acceleration = [0, 0]; % acceleration (m/s/s)
+simulation.createBody(star2_mass, star2_initial_position, star2_initial_velocity, star2_initial_acceleration);
 
 % Set up Star 2 with velocities, such that it orbits Star 1
 % simulation.Bodies(2).Velocity(1:0) = initialVelocityRequiredForOrbit(simulation, simulation.Bodies(1), simulation.Bodies(1));
@@ -125,8 +127,8 @@ final_positions_of_moon = nan(length(step_sizes), 2);
 for i = 1:length(step_sizes)
     % Setup simulation at a given timestep
     sim = Simulation(step_sizes(i), totalTime, G);
-    sim.createBody(star1_mass, star1_initial_position, star1_initial_velocity);
-    sim.createBody(star2_mass, star2_initial_position, star2_initial_velocity);
+    sim.createBody(star1_mass, star1_initial_position, star1_initial_velocity, star1_initial_acceleration);
+    sim.createBody(star2_mass, star2_initial_position, star2_initial_velocity, star2_initial_acceleration);
 
     % Solve system numerically
     solveSystemNumerically(sim);
@@ -179,11 +181,34 @@ function solveSystemNumerically(simulation)
     barycenterHistory.Y(1) = iniital_barycenter(2);
 
     % Inspired by http://www.astro.yale.edu/coppi/astro520/solving_differential_equation.pdf
+    % Velocity Verlet Method
     % Numerically solve the position and velocity of the model system using
     % function arguments
-    for i = 1:length(simulation.TimeSeries) - 1
+    for i = 1:length(simulation.TimeSeries) - 1     
+
+        % Calculate next position using previous position and second and
+        % third order terms
+        % Star 1
+        star1.Position.X(i + 1) = star1.Position.X(i) + ...
+            (simulation.TimeStep .* star1.Velocity.X(i)) + ...
+            0.5 * star1.Acceleration.X(i) * simulation.TimeStep.^2;
+        
+        star1.Position.Y(i + 1) = star1.Position.Y(i) + ...
+            (simulation.TimeStep .* star1.Velocity.Y(i)) + ...
+            0.5 * star1.Acceleration.Y(i) * simulation.TimeStep.^2;
+        
+        % Star 2
+        star2.Position.X(i + 1) = star2.Position.X(i) + ...
+            (simulation.TimeStep .* star2.Velocity.X(i)) + ...
+            0.5 * star2.Acceleration.X(i) * simulation.TimeStep.^2;
+        
+        star2.Position.Y(i + 1) = star2.Position.Y(i) + ...
+            (simulation.TimeStep .* star2.Velocity.Y(i)) + ...
+            0.5 * star2.Acceleration.Y(i) * simulation.TimeStep.^2;
+
+        % Calculate new acceleration based on new position
         % Calculate distance between star 1 and 2
-        distance = calculateDistanceBetweenBodies(i, star1, star2);
+        distance = calculateDistanceBetweenBodies(i + 1, star1, star2);
         distance_vector_length = norm(distance);
         unit_distance = distance ./ distance_vector_length;
 
@@ -200,30 +225,29 @@ function solveSystemNumerically(simulation)
 
         % Using force on each mass, determine accelerations on each star in
         % (x, y) directions
-        accelerationXOf1 = forceXOn1 ./ star1.Mass;
-        accelerationYOf1 = forceYOn1 ./ star1.Mass;
-
-        accelerationXOf2 = forceXOn2 ./ star2.Mass;
-        accelerationYOf2 = forceYOn2 ./ star2.Mass;
-
-        % Update Velocities
+        star1.Acceleration.X(i + 1) = forceXOn1 ./ star1.Mass;
+        star1.Acceleration.Y(i + 1) = forceYOn1 ./ star1.Mass;
+        
+        star2.Acceleration.X(i + 1) = forceXOn2 ./ star2.Mass;
+        star2.Acceleration.Y(i + 1) = forceYOn2 ./ star2.Mass;
+        
+        % Calculate new velocity based on previous velocity and third order
+        % term
         % Star 1
-        star1.Velocity.X(i + 1) = star1.Velocity.X(i) + (simulation.TimeStep .* accelerationXOf1);
-        star1.Velocity.Y(i + 1) = star1.Velocity.Y(i) + (simulation.TimeStep .* accelerationYOf1);
+        star1.Velocity.X(i + 1) = star1.Velocity.X(i) + ...
+            0.5 * (star1.Acceleration.X(i) + star1.Acceleration.X(i + 1)) * simulation.TimeStep;
+
+        star1.Velocity.Y(i + 1) = star1.Velocity.Y(i) + ...
+            0.5 * (star1.Acceleration.Y(i) + star1.Acceleration.Y(i + 1)) * simulation.TimeStep;
         
         % Star 2
-        star2.Velocity.X(i + 1) = star2.Velocity.X(i) + (simulation.TimeStep .* accelerationXOf2);
-        star2.Velocity.Y(i + 1) = star2.Velocity.Y(i) + (simulation.TimeStep .* accelerationYOf2);
-
-        % Update Positions
-        % Star 1
-        star1.Position.X(i + 1) = star1.Position.X(i) + (simulation.TimeStep .* star1.Velocity.X(i));
-        star1.Position.Y(i + 1) = star1.Position.Y(i) + (simulation.TimeStep .* star1.Velocity.Y(i));
+        star2.Velocity.X(i + 1) = star2.Velocity.X(i) + ...
+            0.5 * (star2.Acceleration.X(i) + star2.Acceleration.X(i + 1)) * simulation.TimeStep;
         
-        % Star 2
-        star2.Position.X(i + 1) = star2.Position.X(i) + (simulation.TimeStep .* star2.Velocity.X(i));
-        star2.Position.Y(i + 1) = star2.Position.Y(i) + (simulation.TimeStep .* star2.Velocity.Y(i));
+        star2.Velocity.Y(i + 1) = star2.Velocity.Y(i) + ...
+            0.5 * (star2.Acceleration.Y(i) + star2.Acceleration.Y(i + 1)) * simulation.TimeStep;
 
+        % Calculate Barycenter of system
         barycenter = barycenterFromOrigin(i, star1, star2);
         barycenterHistory.X(i) = barycenter(1);
         barycenterHistory.Y(i) = barycenter(2);

@@ -9,15 +9,16 @@ classdef Body
     end
 
     properties
-        Position % in metres?
-        Velocity % in metres?
+        Position % m
+        Velocity % m/s
+        Acceleration % m/s/s
         KE
         PE
     end
 
     methods
         % Constructor of Body class
-        function obj = Body(mass, initial_position, initial_velocity, time_series)
+        function obj = Body(mass, initial_position, initial_velocity, initial_acceleration, time_series)
             obj.Mass = mass;
 
             % Use time series to generate position and velocity vectors for
@@ -27,6 +28,9 @@ classdef Body
 
             obj.Velocity.X = nan(1, length(time_series));
             obj.Velocity.Y = nan(1, length(time_series));
+            
+            obj.Acceleration.X = nan(1, length(time_series));
+            obj.Acceleration.Y = nan(1, length(time_series));
 
             obj.KE = nan(1, length(time_series));
             obj.PE = nan(1, length(time_series));
@@ -37,6 +41,9 @@ classdef Body
 
             obj.Velocity.X(1) = initial_velocity(1);
             obj.Velocity.Y(1) = initial_velocity(2);
+            
+            obj.Acceleration.X(1) = initial_acceleration(1);
+            obj.Acceleration.Y(1) = initial_acceleration(2);
 
             % TODO: Calculate this based on initial conditions
             obj.KE(1) = 0;

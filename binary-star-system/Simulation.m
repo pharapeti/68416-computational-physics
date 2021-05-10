@@ -30,8 +30,8 @@ classdef Simulation < handle
             obj.Barycenter.Y = nan(1, length(obj.TimeSeries));
         end
 
-        function obj = createBody(obj, mass, init_position, init_velocity)
-            newBody = Body(mass, init_position, init_velocity, obj.TimeSeries);
+        function obj = createBody(obj, mass, init_position, init_velocity, init_acceleration)
+            newBody = Body(mass, init_position, init_velocity, init_acceleration, obj.TimeSeries);
             obj.Bodies = [obj.Bodies, newBody];
         end
     end
