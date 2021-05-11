@@ -102,6 +102,39 @@ legend('PE');
 xlabel('Time (s)');
 ylabel('Energy (j)');
 
+%% Generate contour plot of Effective Graviational Potential Energy
+
+% Step through values of x and y for a instance of  a simulation and 
+% calculate the Effective Graviational Potential Energy at each point
+
+% For example, take the first iteration of the Earth-Moon system
+x_series = linspace(-2e7, 2e7, 2500);
+y_series = linspace(-2e7, 2e7, 2500);
+
+% Calculate Effective GPE over the x, y domain
+gpe = nan([length(x_series), length(y_series)]);
+for i = 1:length(x_series)
+    for j = 1:length(y_series)
+        x_position = x_series(:, i);
+        y_position = y_series(:, j);
+
+        % Calculate effective GPE at this point
+        gpe(i, j) = calculateEffectiveGPE(simulation, x_position, y_position);
+    end
+end
+
+% Plot information on a contour plot and highlight max/min points
+figure(15);
+contourf(x_series, y_series, gpe, 10);
+
+% imagesc(y_series, x_series, gpe);
+% colorbar;
+% axis('image');
+% title('Effective Graviational Potential Energy of Simulation');
+% %subtitle('Smaller the error, the more accurate the fit');
+% xlabel('Y');
+% ylabel('X');
+
 %% Validate Results with Energy Method
 
 % Determine last index of simulation timeseries
@@ -313,6 +346,34 @@ function PE = calculatePE(i, bodyA, bodyB, G)
     r = calculateDistanceBetweenBodies(i, bodyA, bodyB);
     r_length = norm(r);
     PE = (-G .* bodyA.Mass .* bodyB.Mass) ./ r_length;
+end
+
+function GPE = calculateEffectiveGPE(sim, x_position, y_position)
+    current_position = [x_position, y_position];
+    total_mass_to_distance_ratio = 0;
+    
+    for i = 1:length(sim.Bodies) 
+        body = sim.Bodies(i);
+        body_position = [body.Position.X(1), body.Position.Y(1)];
+        
+        % Find distance between current position and body
+        distance_vector = body_position - current_position;
+        distance_vector_length = norm(distance_vector);
+
+        mass_to_distance_ratio = body.Mass ./ distance_vector_length;
+        total_mass_to_distance_ratio = total_mass_to_distance_ratio + ...
+            mass_to_distance_ratio;
+    end
+    
+    % Ref http://www.physics.usyd.edu.au/~helenj/SeniorAstro/lecture11.pdf
+    % Divide both sides by negligible m to give you effective potential
+    % energy per unit mass
+    barycenter_location = barycenterFromOrigin(1, sim.Bodies(1), sim.Bodies(2));
+    r = norm(barycenter_location - current_position);
+    omega = 10; % ???
+    centripedal_potential = 0.5 .* omega.^2 * r^2;
+    
+    GPE = (-sim.G .* total_mass_to_distance_ratio) - centripedal_potential;
 end
 
 function E = totalEnergyOfSimulationAtI(i, simulation)
