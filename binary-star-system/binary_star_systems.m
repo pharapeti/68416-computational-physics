@@ -108,8 +108,8 @@ ylabel('Energy (j)');
 % calculate the Effective Graviational Potential Energy at each point
 
 % For example, take the first iteration of the Earth-Moon system
-x_series = linspace(-2e7, 2e7, 2500);
-y_series = linspace(-2e7, 2e7, 2500);
+x_series = linspace(-5e8, 5e8, 500);
+y_series = linspace(-5e8, 5e8, 500);
 
 % Calculate Effective GPE over the x, y domain
 gpe = nan([length(x_series), length(y_series)]);
@@ -125,7 +125,25 @@ end
 
 % Plot information on a contour plot and highlight max/min points
 figure(15);
-contourf(x_series, y_series, gpe, 10);
+log_gpe = log10(abs(gpe));
+contourf(x_series, y_series, log_gpe.');
+colorbar;
+
+% Mark position of Earth
+x = star1_initial_position(1);
+y = star1_initial_position(2);
+
+hold on
+plot(x, y, '+', 'LineWidth', 3, 'MarkerSize', 12);
+hold on
+
+% Mark position of Moon
+x = star2_initial_position(1);
+y = star2_initial_position(2);
+
+hold on
+plot(x, y, '*', 'LineWidth', 3, 'MarkerSize', 12);
+hold off
 
 % imagesc(y_series, x_series, gpe);
 % colorbar;
@@ -351,11 +369,11 @@ end
 function GPE = calculateEffectiveGPE(sim, x_position, y_position)
     current_position = [x_position, y_position];
     total_mass_to_distance_ratio = 0;
-    
+
     for i = 1:length(sim.Bodies) 
         body = sim.Bodies(i);
         body_position = [body.Position.X(1), body.Position.Y(1)];
-        
+
         % Find distance between current position and body
         distance_vector = body_position - current_position;
         distance_vector_length = norm(distance_vector);
@@ -368,11 +386,16 @@ function GPE = calculateEffectiveGPE(sim, x_position, y_position)
     % Ref http://www.physics.usyd.edu.au/~helenj/SeniorAstro/lecture11.pdf
     % Divide both sides by negligible m to give you effective potential
     % energy per unit mass
+    vector_between_bodies = calculateDistanceBetweenBodies(1, sim.Bodies(1), sim.Bodies(2));
+    distance_between_bodies = norm(vector_between_bodies);
+
+    total_mass = sim.Bodies(1).Mass + sim.Bodies(2).Mass;
+    omega_squared = (sim.G * total_mass) ./ distance_between_bodies.^3;
+
     barycenter_location = barycenterFromOrigin(1, sim.Bodies(1), sim.Bodies(2));
     r = norm(barycenter_location - current_position);
-    omega = 10; % ???
-    centripedal_potential = 0.5 .* omega.^2 * r^2;
-    
+    centripedal_potential = 0.5 .* omega_squared * r^2;
+
     GPE = (-sim.G .* total_mass_to_distance_ratio) - centripedal_potential;
 end
 
