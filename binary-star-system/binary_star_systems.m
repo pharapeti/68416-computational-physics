@@ -123,7 +123,7 @@ for i = 1:length(x_series)
     end
 end
 
-% Plot information on a contour plot and highlight max/min points
+% Generate logarithmic contour plot of Effective GPE
 figure(15);
 log_gpe = log10(abs(gpe));
 contourf(x_series, y_series, log_gpe.');
@@ -144,18 +144,17 @@ x = simulation.Bodies(2).Position.X(1);
 y = simulation.Bodies(2).Position.Y(1);
 plot(x, y, '*', 'LineWidth', 4, 'MarkerSize', 12);
 
+% Find Lagrange Points (maximums)
+maximum = max(max(gpe));
+[x_index, y_index] = find(gpe == maximum);
+text(x_series(x_index(2)), y_series(y_index(2)), 'L4', 'Color', 'white', 'FontSize', 16)
+text(x_series(x_index(1)), y_series(y_index(1)), 'L5', 'Color', 'white', 'FontSize', 16)
+
 % Find Lagrange Points (minimums)
-max = max(max(gpe));
-[x_index, y_index] = find(gpe == max);
-
-% Plot Lagrange Point
-% L4
-%plot(x_series(x_index(1)), y_series(y_index(1)), 'x', 'LineWidth', 2, 'MarkerSize', 8);
-text(x_series(x_index(1)), y_series(y_index(1)), 'L4', 'Color', 'white', 'FontSize', 12)
-
-% L5
-% plot(x_series(x_index(2)), y_series(y_index(2)), 'x', 'LineWidth', 2, 'MarkerSize', 8);
-text(x_series(x_index(2)), y_series(y_index(2)), 'L5', 'Color', 'white', 'FontSize', 12)
+minimum = min(min(gpe));
+[x_index, y_index] = find(gpe == minimum);
+text(x_series(x_index(2)), y_series(y_index(2)), 'L1', 'Color', 'white', 'FontSize', 16)
+text(x_series(x_index(1)), y_series(y_index(1)), 'L2', 'Color', 'white', 'FontSize', 16)
 
 hold off;
 
