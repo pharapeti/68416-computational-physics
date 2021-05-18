@@ -128,30 +128,36 @@ figure(15);
 log_gpe = log10(abs(gpe));
 contourf(x_series, y_series, log_gpe.');
 colorbar;
+grid on;
+title('Effective Graviational Potential Energy');
+xlabel('Y');
+ylabel('X');
+hold on;
 
 % Mark position of Earth
-x = star1_initial_position(1);
-y = star1_initial_position(2);
-
-hold on
-plot(x, y, '+', 'LineWidth', 3, 'MarkerSize', 12);
-hold on
+x = simulation.Bodies(1).Position.X(1);
+y = simulation.Bodies(1).Position.Y(1);
+plot(x, y, '+g', 'LineWidth', 4, 'MarkerSize', 12);
 
 % Mark position of Moon
-x = star2_initial_position(1);
-y = star2_initial_position(2);
+x = simulation.Bodies(2).Position.X(1);
+y = simulation.Bodies(2).Position.Y(1);
+plot(x, y, '*', 'LineWidth', 4, 'MarkerSize', 12);
 
-hold on
-plot(x, y, '*', 'LineWidth', 3, 'MarkerSize', 12);
-hold off
+% Find Lagrange Points (minimums)
+max = max(max(gpe));
+[x_index, y_index] = find(gpe == max);
 
-% imagesc(y_series, x_series, gpe);
-% colorbar;
-% axis('image');
-% title('Effective Graviational Potential Energy of Simulation');
-% %subtitle('Smaller the error, the more accurate the fit');
-% xlabel('Y');
-% ylabel('X');
+% Plot Lagrange Point
+% L4
+%plot(x_series(x_index(1)), y_series(y_index(1)), 'x', 'LineWidth', 2, 'MarkerSize', 8);
+text(x_series(x_index(1)), y_series(y_index(1)), 'L4', 'Color', 'white', 'FontSize', 12)
+
+% L5
+% plot(x_series(x_index(2)), y_series(y_index(2)), 'x', 'LineWidth', 2, 'MarkerSize', 8);
+text(x_series(x_index(2)), y_series(y_index(2)), 'L5', 'Color', 'white', 'FontSize', 12)
+
+hold off;
 
 %% Validate Results with Energy Method
 
