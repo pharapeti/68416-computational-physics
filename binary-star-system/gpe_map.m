@@ -4,7 +4,7 @@ clear; clc; close all
 %% Set up Simulation
 % Simulation Parameters
 timestep = 60; % timestep (seconds)
-totalTime = 60 * 60 * 24 * 600; % total time of simulation (seconds)
+totalTime = 60 * 60 * 24 * 27; % total time of simulation (seconds)
 timeSeries = 0:timestep:totalTime;
 G = 6.67408 * 10.^-11;
 
@@ -35,114 +35,61 @@ simulation.createBody(star2_mass, star2_initial_position, star2_initial_velocity
 %% Solve System
 solveSystemNumerically(simulation);
 
-%% Visualise System
+%% Generate contour plot of Effective Graviational Potential Energy
 
-figure('NumberTitle', 'off', 'Name', 'Trajectory of Earth and Moon');
-plot(simulation.Bodies(1).Position.X, simulation.Bodies(1).Position.Y, 'r', ...
-     simulation.Bodies(2).Position.X, simulation.Bodies(2).Position.Y, 'b', ...
-     simulation.Barycenter.X, simulation.Barycenter.Y, '-')
-title('Trajectory of Earth and Moon');
-xlabel('Position X');
-ylabel('Position Y');
-legend('Earth', 'Moon', 'Barycenter');
+% Step through values of x and y for a instance of  a simulation and 
+% calculate the Effective Graviational Potential Energy at each point
 
-figure('NumberTitle', 'off', 'Name', 'Trajectory of Earth');
-plot(simulation.Bodies(1).Position.X, simulation.Bodies(1).Position.Y);
-title('Tragectory of Earth');
-xlabel('Position X');
-ylabel('Position Y');
+% For example, take the first iteration of the Earth-Moon system
+x_series = linspace(-5e8, 5e8, 1000);
+y_series = linspace(-5e8, 5e8, 1000);
 
-figure('NumberTitle', 'off', 'Name', 'Trajectory of Moon');
-plot(simulation.Bodies(2).Position.X, simulation.Bodies(2).Position.Y);
-% xlim([-10.^6, 10.^6]);
-% ylim([-10.^6, 10.^6]);
-title('Tragectory of Moon');
-xlabel('Position X');
-ylabel('Position Y');
+% Calculate Effective GPE over the x, y domain
+gpe = nan([length(x_series), length(y_series)]);
+for i = 1:length(x_series)
+    for j = 1:length(y_series)
+        x_position = x_series(:, i);
+        y_position = y_series(:, j);
 
-figure('NumberTitle', 'off', 'Name', 'Gravitational Potential Energy of Earth');
-plot(simulation.TimeSeries, simulation.Bodies(1).PE);
-title('Gravitational Potential Energy of Earth');
-legend('GPE');
-xlabel('Time (s)');
-ylabel('Energy (j)');
+        % Calculate effective GPE at this point
+        gpe(i, j) = calculateEffectiveGPE(simulation, x_position, y_position);
+    end
+end
 
-figure('NumberTitle', 'off', 'Name', 'Kinetic Energy of Earth');
-plot(simulation.TimeSeries, simulation.Bodies(1).KE, 'r');
-title('Kinetic Energy of Earth');
-legend('KE');
-xlabel('Time (s)');
-ylabel('Energy (j)');
+% Generate logarithmic contour plot of Effective GPE
+figure(15);
+log_gpe = log10(abs(gpe));
+contourf(x_series, y_series, log_gpe.');
+colorbar;
+grid on;
+title('Effective Graviational Potential Energy');
+xlabel('Y');
+ylabel('X');
+hold on;
 
-figure('NumberTitle', 'off', 'Name', 'Gravitational Potential Energy of Moon');
-plot(simulation.TimeSeries, simulation.Bodies(2).PE);
-title('Gravitational Potential Energy of Moon');
-legend('GPE');
-xlabel('Time (s)');
-ylabel('Energy (j)');
+% Mark position of Earth
+x = simulation.Bodies(1).Position.X(1);
+y = simulation.Bodies(1).Position.Y(1);
+plot(x, y, '+g', 'LineWidth', 4, 'MarkerSize', 12);
 
-figure('NumberTitle', 'off', 'Name', 'Kinetic Energy of Moon');
-plot(simulation.TimeSeries, simulation.Bodies(2).KE, 'r');
-title('Kinetic Energy of Moon');
-legend('KE');
-xlabel('Time (s)');
-ylabel('Energy (j)');
+% Mark position of Moon
+x = simulation.Bodies(2).Position.X(1);
+y = simulation.Bodies(2).Position.Y(1);
+plot(x, y, '*', 'LineWidth', 4, 'MarkerSize', 12);
 
-%% Validate Results with Energy Method
+% Find Lagrange Points (maximums)
+maximum = max(max(gpe));
+[x_index, y_index] = find(gpe == maximum);
+text(x_series(x_index(2)), y_series(y_index(2)), 'L4', 'Color', 'white', 'FontSize', 16)
+text(x_series(x_index(1)), y_series(y_index(1)), 'L5', 'Color', 'white', 'FontSize', 16)
 
-% % Determine last index of simulation timeseries
-% final_time_index = length(simulation.TimeSeries) - 1;
-% 
-% % Compare total energy of system at first timestep to the total energy of
-% % the system at the final timestep
-% initial_energy = totalEnergyOfSimulationAtI(1, simulation);
-% final_energy = totalEnergyOfSimulationAtI(final_time_index, simulation);
-% delta_E = abs(final_energy - initial_energy);
-% 
-% % Find the relative error % between the two
-% relative_error = delta_E ./ final_energy;
-% 
-% % Do this for a range of step sizes to prove that minimising the step size
-% % also minimises the relative error
-% 
-% %% Validate Results with final position of the Moon convergence
-% 
-% step_sizes = logspace(2, 5);
-% final_positions_of_moon = nan(length(step_sizes), 2);
-% 
-% for i = 1:length(step_sizes)
-%     % Setup simulation at a given timestep
-%     sim = Simulation(step_sizes(i), totalTime, G);
-%     sim.createBody(star1_mass, star1_initial_position, star1_initial_velocity, star1_initial_acceleration);
-%     sim.createBody(star2_mass, star2_initial_position, star2_initial_velocity, star2_initial_acceleration);
-% 
-%     % Solve system numerically
-%     solveSystemNumerically(sim);
-% 
-%     % Determine final position of the Moon
-%     final_pos_x = simulation.Bodies(2).Position.X(final_time_index);
-%     final_pos_y = simulation.Bodies(2).Position.Y(final_time_index);
-%     final_positions_of_moon(i, :) = [final_pos_x, final_pos_y];
-% end
-% 
-% % Plot Step size vs Final Position of Moon
-% figure(8)
-% loglog(step_sizes, final_positions_of_moon(:, 1));
-% title('Position X of Moon at end of simulation vs Step Size');
-% xlabel('Step Size (log)');
-% ylabel('Position of Moon X');
-% legend('Position of Moon X');
-% 
-% % Plot Step size vs Final Position of Moon
-% figure(9)
-% loglog(step_sizes, final_positions_of_moon(:, 2));
-% title('Position Y of Moon at end of simulation vs Step Size');
-% xlabel('Step Size (log)');
-% ylabel('Position of Moon Y');
-% legend('Position of Moon Y');
+% Find Lagrange Points (minimums)
+minimum = min(min(gpe));
+[x_index, y_index] = find(gpe == minimum);
+text(x_series(x_index(2)), y_series(y_index(2)), 'L1', 'Color', 'black', 'FontSize', 16)
+text(x_series(x_index(1)), y_series(y_index(1)), 'L2', 'Color', 'black', 'FontSize', 16)
 
-% Do this for a range of step sizes to prove that minimising the step size
-% also minimises the relative error
+hold off;
 
 %% Functions
 
@@ -237,14 +184,6 @@ function solveSystemNumerically(simulation)
         barycenter = barycenterFromOrigin(i, star1, star2);
         barycenterHistory.X(i) = barycenter(1);
         barycenterHistory.Y(i) = barycenter(2);
-
-        % Calculate Kinetic Energy at this timestep
-        star1.KE(i) = calculateKE(i, star1);
-        star2.KE(i) = calculateKE(i, star2);
-
-        % Calculate Graviational Potential Energy at this timestep
-        star1.PE(i) = calculatePE(i, star1, star2, simulation.G);
-        star2.PE(i) = calculatePE(i, star2, star1, simulation.G);
     end
 
     % Persist changes to simulation - due to inability to edit by reference
@@ -288,26 +227,35 @@ function origin_to_barycenter = barycenterFromOrigin(i, bodyA, bodyB)
     origin_to_barycenter = origin_to_star_A + star_A_to_barycenter;
 end
 
-% Calculates the Kinetic Energy for a given star
-function KE = calculateKE(i, body)
-    KE = 0.5 * body.Mass * ...
-        (body.Position.X(i) .^2 + body.Position.Y(i) .^2);
-end
+function GPE = calculateEffectiveGPE(sim, x_position, y_position)
+    current_position = [x_position, y_position];
+    total_mass_to_distance_ratio = 0;
 
-% Calculates the Gravitational Potential Energy between two stars
-function PE = calculatePE(i, bodyA, bodyB, G)
-    r = calculateDistanceBetweenBodies(i, bodyA, bodyB);
-    r_length = norm(r);
-    PE = (-G .* bodyA.Mass .* bodyB.Mass) ./ r_length;
-end
+    for i = 1:length(sim.Bodies) 
+        body = sim.Bodies(i);
+        body_position = [body.Position.X(1), body.Position.Y(1)];
 
-% Calculates the sum of KE and PE in a simulation at a given timestep
-function E = totalEnergyOfSimulationAtI(i, simulation)
-    E = 0;
+        % Find distance between current position and body
+        distance_vector = body_position - current_position;
+        distance_vector_length = norm(distance_vector);
 
-    for j = 1:length(simulation.Bodies) - 1
-        PE = simulation.Bodies(j).PE(i);
-        KE = simulation.Bodies(j).KE(i);
-        E = E + PE + KE;
+        mass_to_distance_ratio = body.Mass ./ distance_vector_length;
+        total_mass_to_distance_ratio = total_mass_to_distance_ratio + ...
+            mass_to_distance_ratio;
     end
+    
+    % Ref http://www.physics.usyd.edu.au/~helenj/SeniorAstro/lecture11.pdf
+    % Divide both sides by negligible m to give you effective potential
+    % energy per unit mass
+    vector_between_bodies = calculateDistanceBetweenBodies(1, sim.Bodies(1), sim.Bodies(2));
+    distance_between_bodies = norm(vector_between_bodies);
+
+    total_mass = sim.Bodies(1).Mass + sim.Bodies(2).Mass;
+    omega_squared = (sim.G * total_mass) ./ distance_between_bodies.^3;
+
+    barycenter_location = barycenterFromOrigin(1, sim.Bodies(1), sim.Bodies(2));
+    r = norm(barycenter_location - current_position);
+    centripedal_potential = 0.5 .* omega_squared * r^2;
+
+    GPE = (-sim.G .* total_mass_to_distance_ratio) - centripedal_potential;
 end
