@@ -34,8 +34,8 @@ simulation.createBody(star2_mass, star2_initial_position, ...
 % Create Satellite in L4
 L4_position = [1.9138e+08, 3.3567e+08];
 satellite_mass = 1; % mass (kg)
-satellite_initial_position = l4_position; % position (m)
-satellite_initial_velocity = [0, 0]; % velocity (m/s)
+satellite_initial_position = L4_position; % position (m)
+satellite_initial_velocity = [0, 1.022 * 10.^3]; % velocity (m/s)
 satellite_initial_acceleration = [0, 0]; % acceleration (m/s/s)
 simulation.createBody(satellite_mass, satellite_initial_position, ...
     satellite_initial_velocity, satellite_initial_acceleration);
@@ -81,19 +81,17 @@ function solveSystemNumerically(simulation)
     % Stars
     star1 = simulation.Bodies(1);
     star2 = simulation.Bodies(2);
+    sat = simulation.Bodies(3);
 
     % Set up data structure to record barycenter across time
     barycenterHistory = Barycenter();
     barycenterHistory.X = nan(1, length(simulation.TimeSeries));
     barycenterHistory.Y = nan(1, length(simulation.TimeSeries));
 
-    % Gravitational Factor
-    g_factor = simulation.G * star1.Mass * star2.Mass;
-
     % Find initial barycenter
-    iniital_barycenter = barycenterFromOrigin(1, star1, star2);
-    barycenterHistory.X(1) = iniital_barycenter(1);
-    barycenterHistory.Y(1) = iniital_barycenter(2);
+    initial_barycenter = barycenterFromOrigin(1, star1, star2);
+    barycenterHistory.X(1) = initial_barycenter(1);
+    barycenterHistory.Y(1) = initial_barycenter(2);
 
     % Inspired by http://www.astro.yale.edu/coppi/astro520/solving_differential_equation.pdf
     % Velocity Verlet Method
@@ -120,47 +118,86 @@ function solveSystemNumerically(simulation)
         star2.Position.Y(i + 1) = star2.Position.Y(i) + ...
             (simulation.TimeStep .* star2.Velocity.Y(i)) + ...
             0.5 * star2.Acceleration.Y(i) * simulation.TimeStep.^2;
-
-        % Calculate new acceleration based on new position
-        % Calculate distance between star 1 and 2
-        distance = calculateDistanceBetweenBodies(i + 1, star1, star2);
-        distance_vector_length = norm(distance);
-        unit_distance = distance ./ distance_vector_length;
-
-        % Using distance, calculate force on each star
-        forceOn1 = (g_factor ./ (distance_vector_length .^ 2)) .* unit_distance;
-
-        % Split forces into (x, y) directions
-        forceXOn1 = forceOn1(1);
-        forceYOn1 = forceOn1(2);
-
-        % Newton's Second Law - equal and opposite reaction force
-        forceXOn2 = - forceXOn1;
-        forceYOn2 = - forceYOn1;
-
-        % Using force on each mass, determine accelerations on each star in
-        % (x, y) directions
-        star1.Acceleration.X(i + 1) = forceXOn1 ./ star1.Mass;
-        star1.Acceleration.Y(i + 1) = forceYOn1 ./ star1.Mass;
         
-        star2.Acceleration.X(i + 1) = forceXOn2 ./ star2.Mass;
-        star2.Acceleration.Y(i + 1) = forceYOn2 ./ star2.Mass;
+        % Satellite
+        sat.Position.X(i + 1) = sat.Position.X(i) + ...
+            (simulation.TimeStep .* sat.Velocity.X(i)) + ...
+            0.5 * sat.Acceleration.X(i) * simulation.TimeStep.^2;
+        
+        sat.Position.Y(i + 1) = sat.Position.Y(i) + ...
+            (simulation.TimeStep .* sat.Velocity.Y(i)) + ...
+            0.5 * sat.Acceleration.Y(i) * simulation.TimeStep.^2;
+        
+        % Forces between Earth and Moon
+        d_earth_moon = calculateDistanceBetweenBodies(i + 1, star1, star2);
+        d_length = norm(d_earth_moon);
+        unit_d = d_earth_moon ./ d_length;
+        
+        force_earth_moon = (simulation.G * star1.Mass * star2.Mass ./ d_length .^ 2) .* unit_d;
+
+        % Forces between Earth and Satellite
+        d_sat_earth = calculateDistanceBetweenBodies(i + 1, star1, sat);
+        d_length = norm(d_sat_earth);
+        unit_d = d_sat_earth ./ d_length;
+        
+        force_sat_earth = (simulation.G * star1.Mass * sat.Mass ./ d_length .^ 2) .* unit_d;
+        
+        % Forces between Moon and Satellite
+        d_sat_moon = calculateDistanceBetweenBodies(i + 1, star2, sat);
+        d_length = norm(d_sat_moon);
+        unit_d = d_sat_moon ./ d_length;
+
+        force_sat_moon = (simulation.G * star2.Mass * sat.Mass ./ d_length .^ 2) .* unit_d;
+
+        % Using Newton's Third Law, calculate equal and opposite forces
+        force_moon_earth = -force_earth_moon;
+        force_earth_sat = -force_sat_earth;
+        force_moon_sat = -force_sat_moon;
+
+        % Calculate sum of forces of each body
+        sum_force_earth = force_earth_moon + force_earth_sat;
+        sum_force_moon = force_moon_earth + force_moon_sat;
+        sum_force_sat = -(force_sat_earth + force_sat_moon);
+
+        % Using Newton's Second Law on each mass, determine accelerations 
+        % on each star in (x, y) directions due to forces
+        star1.Acceleration.X(i + 1) = sum_force_earth(1) ./ star1.Mass;
+        star1.Acceleration.Y(i + 1) = sum_force_earth(2) ./ star1.Mass;
+        
+        star2.Acceleration.X(i + 1) = sum_force_moon(1) ./ star2.Mass;
+        star2.Acceleration.Y(i + 1) = sum_force_moon(2) ./ star2.Mass;
+        
+        sat.Acceleration.X(i + 1) = sum_force_sat(1) ./ sat.Mass;
+        sat.Acceleration.Y(i + 1) = sum_force_sat(2) ./ sat.Mass;
         
         % Calculate new velocity based on previous velocity and third order
         % term
         % Star 1
         star1.Velocity.X(i + 1) = star1.Velocity.X(i) + ...
-            0.5 * (star1.Acceleration.X(i) + star1.Acceleration.X(i + 1)) * simulation.TimeStep;
+            0.5 * (star1.Acceleration.X(i) + ...
+            star1.Acceleration.X(i + 1)) * simulation.TimeStep;
 
         star1.Velocity.Y(i + 1) = star1.Velocity.Y(i) + ...
-            0.5 * (star1.Acceleration.Y(i) + star1.Acceleration.Y(i + 1)) * simulation.TimeStep;
+            0.5 * (star1.Acceleration.Y(i) + ...
+            star1.Acceleration.Y(i + 1)) * simulation.TimeStep;
         
         % Star 2
         star2.Velocity.X(i + 1) = star2.Velocity.X(i) + ...
-            0.5 * (star2.Acceleration.X(i) + star2.Acceleration.X(i + 1)) * simulation.TimeStep;
+            0.5 * (star2.Acceleration.X(i) + ...
+            star2.Acceleration.X(i + 1)) * simulation.TimeStep;
         
         star2.Velocity.Y(i + 1) = star2.Velocity.Y(i) + ...
-            0.5 * (star2.Acceleration.Y(i) + star2.Acceleration.Y(i + 1)) * simulation.TimeStep;
+            0.5 * (star2.Acceleration.Y(i) + ...
+            star2.Acceleration.Y(i + 1)) * simulation.TimeStep;
+        
+        % Satellite
+        sat.Velocity.X(i + 1) = sat.Velocity.X(i) + ...
+            0.5 * (sat.Acceleration.X(i) + ...
+            sat.Acceleration.X(i + 1)) * simulation.TimeStep;
+        
+        sat.Velocity.Y(i + 1) = sat.Velocity.Y(i) + ...
+            0.5 * (sat.Acceleration.Y(i) + ...
+            sat.Acceleration.Y(i + 1)) * simulation.TimeStep;
 
         % Calculate Barycenter of system
         barycenter = barycenterFromOrigin(i, star1, star2);
@@ -171,16 +208,17 @@ function solveSystemNumerically(simulation)
     % Persist changes to simulation - due to inability to edit by reference
     simulation.Bodies(1) = star1;
     simulation.Bodies(2) = star2;
+    simulation.Bodies(3) = sat;
     simulation.Barycenter.X = barycenterHistory.X;
     simulation.Barycenter.Y = barycenterHistory.Y;
 end
 
 % Returns 1x2 array of distances in (x, y) respectively
 function r = calculateDistanceBetweenBodies(i, bodyA, bodyB)
-    starA = [bodyA.Position.X(i), bodyA.Position.Y(i)];
-    starB = [bodyB.Position.X(i), bodyB.Position.Y(i)];
+    positionA = [bodyA.Position.X(i), bodyA.Position.Y(i)];
+    positionB = [bodyB.Position.X(i), bodyB.Position.Y(i)];
 
-    r = starB - starA;
+    r = positionB - positionA;
 end
 
 function origin_to_barycenter = barycenterFromOrigin(i, bodyA, bodyB)
