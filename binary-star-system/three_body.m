@@ -17,79 +17,61 @@ star1_mass = 5.97219 * 10.^24; % mass (kg)
 % Earth's COM -> Barycenter = 4675km
 star1_initial_position = [-4675 * 10.^3, 0]; % position (m)
 
-% Earth orbit's the Earth-Moon Barycenter at 45km/h = 12.5m/ss
+% Earth orbit's the Earth-Moon Barycenter at 45km/h = 12.5m/s
 star1_initial_velocity = [0, 12.5]; % velocity (m/s)
 star1_initial_acceleration = [0, 0]; % acceleration (m/s/s)
-simulation.createBody(star1_mass, star1_initial_position, star1_initial_velocity, star1_initial_acceleration);
+simulation.createBody(star1_mass, star1_initial_position, ...
+    star1_initial_velocity, star1_initial_acceleration);
 
 % Create Star 2
 star2_mass = 7.34767309 * 10.^22; % mass (kg)
 star2_initial_position = [384400 * 10.^3, 0]; % position (m)
 star2_initial_velocity = [0, 1.022 * 10.^3]; % velocity (m/s)
 star2_initial_acceleration = [0, 0]; % acceleration (m/s/s)
-simulation.createBody(star2_mass, star2_initial_position, star2_initial_velocity, star2_initial_acceleration);
+simulation.createBody(star2_mass, star2_initial_position, ...
+    star2_initial_velocity, star2_initial_acceleration);
 
-% Set up Star 2 with velocities, such that it orbits Star 1
-% simulation.Bodies(2).Velocity(1:0) = initialVelocityRequiredForOrbit(simulation, simulation.Bodies(1), simulation.Bodies(1));
+% Create Satellite in L4
+L4_position = [1.9138e+08, 3.3567e+08];
+satellite_mass = 1; % mass (kg)
+satellite_initial_position = l4_position; % position (m)
+satellite_initial_velocity = [0, 0]; % velocity (m/s)
+satellite_initial_acceleration = [0, 0]; % acceleration (m/s/s)
+simulation.createBody(satellite_mass, satellite_initial_position, ...
+    satellite_initial_velocity, satellite_initial_acceleration);
 
 %% Solve System
 solveSystemNumerically(simulation);
 
-%% Generate contour plot of Effective Graviational Potential Energy
+%% Visualise System
 
-% Step through values of x and y for a instance of  a simulation and 
-% calculate the Effective Graviational Potential Energy at each point
+figure('NumberTitle', 'off', 'Name', 'Trajectory of Earth and Moon');
+plot(simulation.Bodies(1).Position.X, simulation.Bodies(1).Position.Y, 'r', ...
+     simulation.Bodies(2).Position.X, simulation.Bodies(2).Position.Y, 'b', ...
+     simulation.Bodies(3).Position.X, simulation.Bodies(3).Position.Y, 'g', ...
+     simulation.Barycenter.X, simulation.Barycenter.Y, '-')
+title('Trajectory of Earth, Moon and Satellite');
+xlabel('Position X');
+ylabel('Position Y');
+legend('Earth', 'Moon', 'Satellite', 'Barycenter');
 
-% For example, take the first iteration of the Earth-Moon system
-x_series = linspace(-5e8, 5e8, 500);
-y_series = linspace(-5e8, 5e8, 500);
+figure('NumberTitle', 'off', 'Name', 'Trajectory of Earth');
+plot(simulation.Bodies(1).Position.X, simulation.Bodies(1).Position.Y);
+title('Tragectory of Earth');
+xlabel('Position X');
+ylabel('Position Y');
 
-% Calculate Effective GPE over the x, y domain
-gpe = nan([length(x_series), length(y_series)]);
-for i = 1:length(x_series)
-    for j = 1:length(y_series)
-        x_position = x_series(:, i);
-        y_position = y_series(:, j);
+figure('NumberTitle', 'off', 'Name', 'Trajectory of Moon');
+plot(simulation.Bodies(2).Position.X, simulation.Bodies(2).Position.Y);
+title('Tragectory of Moon');
+xlabel('Position X');
+ylabel('Position Y');
 
-        % Calculate effective GPE at this point
-        gpe(i, j) = calculateEffectiveGPE(simulation, x_position, y_position);
-    end
-end
-
-% Generate logarithmic contour plot of Effective GPE
-figure(15);
-log_gpe = log10(abs(gpe));
-contourf(x_series, y_series, log_gpe.');
-colorbar;
-grid on;
-title('Effective Graviational Potential');
-xlabel('Y');
-ylabel('X');
-hold on;
-
-% Mark position of Earth
-x = simulation.Bodies(1).Position.X(1);
-y = simulation.Bodies(1).Position.Y(1);
-plot(x, y, '+g', 'LineWidth', 4, 'MarkerSize', 12);
-
-% Mark position of Moon
-x = simulation.Bodies(2).Position.X(1);
-y = simulation.Bodies(2).Position.Y(1);
-plot(x, y, '*', 'LineWidth', 4, 'MarkerSize', 12);
-
-% Find Lagrange Points (maximums)
-maximum = max(max(gpe));
-[x_index, y_index] = find(gpe == maximum);
-text(x_series(x_index(2)), y_series(y_index(2)), 'L4', 'Color', 'white', 'FontSize', 16)
-text(x_series(x_index(1)), y_series(y_index(1)), 'L5', 'Color', 'white', 'FontSize', 16)
-
-% Find Lagrange Points (minimums)
-minimum = min(min(gpe));
-[x_index, y_index] = find(gpe == minimum);
-text(x_series(x_index(2)), y_series(y_index(2)), 'L1', 'Color', 'black', 'FontSize', 16)
-text(x_series(x_index(1)), y_series(y_index(1)), 'L2', 'Color', 'black', 'FontSize', 16)
-
-hold off;
+figure('NumberTitle', 'off', 'Name', 'Trajectory of Satellite');
+plot(simulation.Bodies(3).Position.X, simulation.Bodies(3).Position.Y);
+title('Tragectory of Satellite');
+xlabel('Position X');
+ylabel('Position Y');
 
 %% Functions
 
@@ -225,37 +207,4 @@ function origin_to_barycenter = barycenterFromOrigin(i, bodyA, bodyB)
     % result in Rbc being to vector from the coordinate origin (xy = [0,
     % 0]) to the position of the barycenter of the system.
     origin_to_barycenter = origin_to_star_A + star_A_to_barycenter;
-end
-
-function GPE = calculateEffectiveGPE(sim, x_position, y_position)
-    current_position = [x_position, y_position];
-    total_mass_to_distance_ratio = 0;
-
-    for i = 1:length(sim.Bodies) 
-        body = sim.Bodies(i);
-        body_position = [body.Position.X(1), body.Position.Y(1)];
-
-        % Find distance between current position and body
-        distance_vector = body_position - current_position;
-        distance_vector_length = norm(distance_vector);
-
-        mass_to_distance_ratio = body.Mass ./ distance_vector_length;
-        total_mass_to_distance_ratio = total_mass_to_distance_ratio + ...
-            mass_to_distance_ratio;
-    end
-    
-    % Ref http://www.physics.usyd.edu.au/~helenj/SeniorAstro/lecture11.pdf
-    % Divide both sides by negligible m to give you effective potential
-    % energy per unit mass
-    vector_between_bodies = calculateDistanceBetweenBodies(1, sim.Bodies(1), sim.Bodies(2));
-    distance_between_bodies = norm(vector_between_bodies);
-
-    total_mass = sim.Bodies(1).Mass + sim.Bodies(2).Mass;
-    omega_squared = (sim.G * total_mass) ./ distance_between_bodies.^3;
-
-    barycenter_location = barycenterFromOrigin(1, sim.Bodies(1), sim.Bodies(2));
-    r = norm(barycenter_location - current_position);
-    centripedal_potential = 0.5 .* omega_squared * r^2;
-
-    GPE = (-sim.G .* total_mass_to_distance_ratio) - centripedal_potential;
 end
