@@ -3,137 +3,122 @@ clear; clc; close all
 
 %% Set up Simulation
 % Simulation Parameters
-timestep = 60 * 60 * 24; % timestep (seconds)
-totalTime = 60 * 60 * 24 * 365; % total time of simulation (seconds)
+timestep = 60; % timestep (seconds)
+totalTime = 60 * 60 * 24 * 15; % total time of simulation (seconds)
 timeSeries = 0:timestep:totalTime;
 G = 6.67408 * 10.^-11;
 
-% Create Simulation
-simulation = Simulation(timestep, totalTime, G);
+%% Stability Check
 
-% Create Earth
-earth_mass = 5.97219 * 10.^24; % mass (kg)
+x_series = linspace(-5e8, 5e8, 250);
+y_series = linspace(-5e8, 5e8, 250);
 
-% Earth's COM -> Barycenter = 4675km
-earth_initial_position = [-4675 * 10.^3, 0]; % position (m)
+% Determine whether system is stable in the following configurations
+stableGrid = nan([length(x_series), length(y_series)]);
 
-% Earth orbit's the Earth-Moon Barycenter at 45km/h = 12.5m/s
-earth_initial_velocity = [0, 12.5]; % velocity (m/s)
-earth_initial_acceleration = [0, 0]; % acceleration (m/s/s)
-simulation.createBody(earth_mass, earth_initial_position, ...
-    earth_initial_velocity, earth_initial_acceleration);
+final_index = length(x_series) - 1;
 
-% Create Moon
-moon_mass = 7.34767309 * 10.^22; % mass (kg)
-moon_initial_position = [384400 * 10.^3, 0]; % position (m)
-moon_initial_velocity = [0, 1.022 * 10.^3]; % velocity (m/s)
-moon_initial_acceleration = [0, 0]; % acceleration (m/s/s)
-simulation.createBody(moon_mass, moon_initial_position, ...
-    moon_initial_velocity, moon_initial_acceleration);
+for i = 1:length(x_series)
+    for j = 1:length(y_series)
 
-% Create Satellite in L4
-L4_position = [1.9138e+08, 3.3567e+08];
-satellite_mass = 1; % mass (kg)
-satellite_initial_position = L4_position; % position (m)
+        % Create Simulation
+        simulation = Simulation(timestep, totalTime, G);
 
-orbital_velocity = 1.022 * 10.^3;
-velocity_x = orbital_velocity .* sqrt(3) ./ 2;
-velocity_y = orbital_velocity .* 0.5;
-satellite_initial_velocity = [-velocity_x, velocity_y]; % velocity (m/s)
+        % Create two large body bodies
+        star1_mass = 6 * 10.^24; % mass (kg)
+        star1_initial_position = [0, 0]; % position (m)
+        star1_initial_velocity = [0, -1e+3]; % velocity (m/s)
+        star1_initial_acceleration = [0, 0]; % acceleration (m/s/s)
+        simulation.createBody(star1_mass, star1_initial_position, ...
+        star1_initial_velocity, star1_initial_acceleration);
 
-satellite_initial_acceleration = [0, 0]; % acceleration (m/s/s)
-simulation.createBody(satellite_mass, satellite_initial_position, ...
-    satellite_initial_velocity, satellite_initial_acceleration);
+        star2_mass = 6 * 10.^24; % mass (kg)
+        star2_initial_position = [2e+8, 0]; % position (m)
+        star2_initial_velocity = [0, 1e+3]; % velocity (m/s)
+        star2_initial_acceleration = [0, 0]; % acceleration (m/s/s)
+        simulation.createBody(star2_mass, star2_initial_position, ...
+        star2_initial_velocity, star2_initial_acceleration);
 
-solveSystemNumerically(simulation);
+        % Create Satellite
+        x_position = x_series(:, i);
+        y_position = y_series(:, j);
+        
+        satellite_mass = 6 * 10.^24; % mass (kg)
+        satellite_initial_position = [x_position, y_position]; % position (m)
+        satellite_initial_velocity = [-1e+3, 0]; % velocity (m/s)
+        satellite_initial_acceleration = [0, 0]; % acceleration (m/s/s)
+        simulation.createBody(satellite_mass, satellite_initial_position, ...
+        satellite_initial_velocity, satellite_initial_acceleration);
 
-%% Velocity Experimentation
+        % Solve system over the duration of the simulation
+        solveSystemNumerically(simulation);
 
-% velocitySeries = 0:50:2000;
-% finalDistance = nan(length(velocitySeries), 1);
-% final_time_index = length(velocitySeries) - 1;
-% 
-% for i = 1:length(velocitySeries) - 1
-% 
-%     % Create Simulation
-%     simulation = Simulation(timestep, totalTime, G);
-% 
-%     % Create Earth
-%     earth_mass = 5.97219 * 10.^24; % mass (kg)
-% 
-%     % Earth's COM -> Barycenter = 4675km
-%     earth_initial_position = [-4675 * 10.^3, 0]; % position (m)
-% 
-%     % Earth orbit's the Earth-Moon Barycenter at 45km/h = 12.5m/s
-%     earth_initial_velocity = [0, 12.5]; % velocity (m/s)
-%     earth_initial_acceleration = [0, 0]; % acceleration (m/s/s)
-%     simulation.createBody(earth_mass, earth_initial_position, ...
-%         earth_initial_velocity, earth_initial_acceleration);
-% 
-%     % Create Moon
-%     moon_mass = 7.34767309 * 10.^22; % mass (kg)
-%     moon_initial_position = [384400 * 10.^3, 0]; % position (m)
-%     
-%     orbital_velocity = 1.022 * 10.^3;
-%     velocity_x = orbital_velocity .* sqrt(3) ./ 2;
-%     velocity_y = orbital_velocity .* 0.5;
-%     
-%     moon_initial_velocity = [velocity_x, velocity_y]; % velocity (m/s)
-%     moon_initial_acceleration = [0, 0]; % acceleration (m/s/s)
-%     simulation.createBody(moon_mass, moon_initial_position, ...
-%         moon_initial_velocity, moon_initial_acceleration);
-% 
-%     % Create Satellite in L4
-%     L4_position = [1.9138e+08, 3.3567e+08];
-%     satellite_mass = 1; % mass (kg)
-%     satellite_initial_position = L4_position; % position (m)
-%     satellite_initial_velocity = [0, 1.022 * 10.^3]; % velocity (m/s)
-%     satellite_initial_acceleration = [0, 0]; % acceleration (m/s/s)
-%     simulation.createBody(satellite_mass, satellite_initial_position, ...
-%         satellite_initial_velocity, satellite_initial_acceleration);
-% 
-%     solveSystemNumerically(simulation);
-%     
-%     % Calculate distance of satellite to earth
-%     d_sat_earth = calculateDistanceBetweenBodies(final_time_index, simulation.Bodies(1), simulation.Bodies(3));
-%     finalDistance(i) = norm(d_sat_earth);
-% end
-% % 
-% % figure(1)
-% plot(velocitySeries ./ 1000, finalDistance);
-% title('Distance from Earth after 1 year')
-% xlabel('Velocity (m/s)')
-% ylabel('Distance from Earth after 1 year (km/s)')
+        % Determine whether system is stable
+        stableGrid(i, j) = 1;
+        
+        % Grab both stars and Satellite
+        star1 = simulation.Bodies(1);
+        star2 = simulation.Bodies(2);
+        satellite = simulation.Bodies(3);
+
+        % Calculate distances between bodies at end of simulation
+        r1 = calculateDistanceBetweenBodies(final_index, star1, star2);
+        r2 = calculateDistanceBetweenBodies(final_index, satellite, star1);
+        r3 = calculateDistanceBetweenBodies(final_index, satellite, star2);
+        
+        % Check if all bodies haven't been ejected
+        stable = 1;
+        
+        if (r1(1) > 1e+10 || r1(2) > 1e+10)
+            stable = 0;
+        end
+        if (r2(1) > 1e+10 || r2(2) > 1e+10)
+            stable = 0;
+        end
+        if (r3(1) > 1e+10 || r3(2) > 1e+10)
+            stable = 0;
+        end
+
+        stableGrid(i, j) = stable;
+    end
+end
+
+
+figure('NumberTitle', 'off', 'Name', 'Ejection map');
+contourf(x_series, y_series, stableGrid);
+title('Ejection map')
+xlabel('X')
+ylabel('Y')
 
 %% Visualise System
 
-figure('NumberTitle', 'off', 'Name', 'Trajectory of Earth and Moon');
-plot(simulation.Bodies(1).Position.X, simulation.Bodies(1).Position.Y, 'r', ...
-     simulation.Bodies(2).Position.X, simulation.Bodies(2).Position.Y, 'b', ...
-     simulation.Bodies(3).Position.X, simulation.Bodies(3).Position.Y, 'g', ...
-     simulation.Barycenter.X, simulation.Barycenter.Y, '-')
-title('Trajectory of Earth, Moon and Satellite');
-xlabel('Position X');
-ylabel('Position Y');
-legend('Earth', 'Moon', 'Satellite', 'Barycenter');
-
-figure('NumberTitle', 'off', 'Name', 'Trajectory of Earth');
-plot(simulation.Bodies(1).Position.X, simulation.Bodies(1).Position.Y);
-title('Tragectory of Earth');
-xlabel('Position X');
-ylabel('Position Y');
-
-figure('NumberTitle', 'off', 'Name', 'Trajectory of Moon');
-plot(simulation.Bodies(2).Position.X, simulation.Bodies(2).Position.Y);
-title('Tragectory of Moon');
-xlabel('Position X');
-ylabel('Position Y');
-
-figure('NumberTitle', 'off', 'Name', 'Trajectory of Satellite');
-plot(simulation.Bodies(3).Position.X, simulation.Bodies(3).Position.Y);
-title('Tragectory of Satellite');
-xlabel('Position X');
-ylabel('Position Y');
+% figure('NumberTitle', 'off', 'Name', 'Trajectory of Star 1, 2 and Satellite');
+% plot(simulation.Bodies(1).Position.X, simulation.Bodies(1).Position.Y, 'r', ...
+%      simulation.Bodies(2).Position.X, simulation.Bodies(2).Position.Y, 'b', ...
+%      simulation.Bodies(3).Position.X, simulation.Bodies(3).Position.Y, 'g', ...
+%      simulation.Barycenter.X, simulation.Barycenter.Y, '-')
+% title('Trajectory of Star 1, 2 and Satellite');
+% xlabel('Position X');
+% ylabel('Position Y');
+% legend('Star 1', 'Star 2', 'Satellite', 'Barycenter');
+% 
+% figure('NumberTitle', 'off', 'Name', 'Trajectory of Star 1');
+% plot(simulation.Bodies(1).Position.X, simulation.Bodies(1).Position.Y);
+% title('Tragectory of Star 1');
+% xlabel('Position X');
+% ylabel('Position Y');
+% 
+% figure('NumberTitle', 'off', 'Name', 'Trajectory of Star 2');
+% plot(simulation.Bodies(2).Position.X, simulation.Bodies(2).Position.Y);
+% title('Tragectory of Star 2');
+% xlabel('Position X');
+% ylabel('Position Y');
+% 
+% figure('NumberTitle', 'off', 'Name', 'Trajectory of Satellite');
+% plot(simulation.Bodies(3).Position.X, simulation.Bodies(3).Position.Y);
+% title('Tragectory of Satellite');
+% xlabel('Position X');
+% ylabel('Position Y');
 
 %% Functions
 
