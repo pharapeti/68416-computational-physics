@@ -86,20 +86,21 @@ yline(3.844776486e+28, 'b--', 'LineWidth', 2, 'DisplayName', 'Analytical Maximum
 
 %% Validate Results with Energy Method
 
-% % Determine last index of simulation timeseries
-% final_time_index = length(simulation.TimeSeries) - 1;
-% 
-% % Compare total energy of system at first timestep to the total energy of
-% % the system at the final timestep
-% initial_energy = totalEnergyOfSimulationAtI(1, simulation);
-% final_energy = totalEnergyOfSimulationAtI(final_time_index, simulation);
-% delta_E = abs(final_energy - initial_energy);
-% 
-% % Find the relative error % between the two
-% relative_error = delta_E ./ final_energy;
-% 
-% % Do this for a range of step sizes to prove that minimising the step size
-% % also minimises the relative error
+% Determine last index of simulation timeseries
+final_time_index = length(simulation.TimeSeries) - 1;
+
+% Compare total energy of system at first timestep to the total energy of
+% the system at the final timestep
+initial_energy = totalEnergyOfSimulationAtI(1, simulation);
+final_energy = totalEnergyOfSimulationAtI(final_time_index, simulation);
+delta_E = abs(final_energy - initial_energy);
+
+% Find the relative error % between the two
+relative_error = delta_E ./ final_energy;
+disp(relative_error)
+
+% Do this for a range of step sizes to prove that minimising the step size
+% also minimises the relative error
 
 %% Validate Results with final position of the Moon convergence
 
@@ -293,7 +294,7 @@ function KE = calculateKE(i, body)
     KE = 0.5 * body.Mass * (velocity_length .^2);
 end
 
-% Calculates the Gravitational Potential Energy between two stars
+% Calculates the Potential Energy between two stars
 function PE = calculatePE(i, bodyA, bodyB, G)
     r = calculateDistanceBetweenBodies(i, bodyA, bodyB);
     r_length = norm(r);
