@@ -3,8 +3,8 @@ clear; clc; close all
 
 %% Set up Simulation
 % Simulation Parameters
-timestep = 60; % timestep (seconds)
-totalTime = 60 * 60 * 24 * 600; % total time of simulation (seconds)
+timestep = 60 * 60; % timestep (seconds)
+totalTime = 60 * 60 * 24 * 365; % total time of simulation (seconds)
 timeSeries = 0:timestep:totalTime;
 G = 6.67408 * 10.^-11;
 
@@ -29,9 +29,6 @@ star2_initial_velocity = [0, 1.022 * 10.^3]; % velocity (m/s)
 star2_initial_acceleration = [0, 0]; % acceleration (m/s/s)
 simulation.createBody(star2_mass, star2_initial_position, star2_initial_velocity, star2_initial_acceleration);
 
-% Set up Star 2 with velocities, such that it orbits Star 1
-% simulation.Bodies(2).Velocity(1:0) = initialVelocityRequiredForOrbit(simulation, simulation.Bodies(1), simulation.Bodies(1));
-
 %% Solve System
 solveSystemNumerically(simulation);
 
@@ -54,8 +51,6 @@ ylabel('Position Y');
 
 figure('NumberTitle', 'off', 'Name', 'Trajectory of Moon');
 plot(simulation.Bodies(2).Position.X, simulation.Bodies(2).Position.Y);
-% xlim([-10.^6, 10.^6]);
-% ylim([-10.^6, 10.^6]);
 title('Tragectory of Moon');
 xlabel('Position X');
 ylabel('Position Y');
@@ -87,6 +82,7 @@ title('Kinetic Energy of Moon');
 legend('KE');
 xlabel('Time (s)');
 ylabel('Energy (j)');
+yline(3.844776486e+28, 'b--', 'LineWidth', 2, 'DisplayName', 'Analytical Maximum');
 
 %% Validate Results with Energy Method
 
@@ -104,9 +100,9 @@ ylabel('Energy (j)');
 % 
 % % Do this for a range of step sizes to prove that minimising the step size
 % % also minimises the relative error
-% 
-% %% Validate Results with final position of the Moon convergence
-% 
+
+%% Validate Results with final position of the Moon convergence
+
 % step_sizes = logspace(2, 5);
 % final_positions_of_moon = nan(length(step_sizes), 2);
 % 
@@ -140,9 +136,6 @@ ylabel('Energy (j)');
 % xlabel('Step Size (log)');
 % ylabel('Position of Moon Y');
 % legend('Position of Moon Y');
-
-% Do this for a range of step sizes to prove that minimising the step size
-% also minimises the relative error
 
 %% Functions
 
@@ -221,17 +214,21 @@ function solveSystemNumerically(simulation)
         % term
         % Star 1
         star1.Velocity.X(i + 1) = star1.Velocity.X(i) + ...
-            0.5 * (star1.Acceleration.X(i) + star1.Acceleration.X(i + 1)) * simulation.TimeStep;
+            0.5 * (star1.Acceleration.X(i) + ...
+            star1.Acceleration.X(i + 1)) * simulation.TimeStep;
 
         star1.Velocity.Y(i + 1) = star1.Velocity.Y(i) + ...
-            0.5 * (star1.Acceleration.Y(i) + star1.Acceleration.Y(i + 1)) * simulation.TimeStep;
+            0.5 * (star1.Acceleration.Y(i) + ...
+            star1.Acceleration.Y(i + 1)) * simulation.TimeStep;
         
         % Star 2
         star2.Velocity.X(i + 1) = star2.Velocity.X(i) + ...
-            0.5 * (star2.Acceleration.X(i) + star2.Acceleration.X(i + 1)) * simulation.TimeStep;
+            0.5 * (star2.Acceleration.X(i) + ...
+            star2.Acceleration.X(i + 1)) * simulation.TimeStep;
         
         star2.Velocity.Y(i + 1) = star2.Velocity.Y(i) + ...
-            0.5 * (star2.Acceleration.Y(i) + star2.Acceleration.Y(i + 1)) * simulation.TimeStep;
+            0.5 * (star2.Acceleration.Y(i) + ...
+            star2.Acceleration.Y(i + 1)) * simulation.TimeStep;
 
         % Calculate Barycenter of system
         barycenter = barycenterFromOrigin(i, star1, star2);
@@ -290,14 +287,17 @@ end
 
 % Calculates the Kinetic Energy for a given star
 function KE = calculateKE(i, body)
-    KE = 0.5 * body.Mass * ...
-        (body.Position.X(i) .^2 + body.Position.Y(i) .^2);
+    velocity = [body.Velocity.X(i), body.Velocity.Y(i)];
+    velocity_length = norm(velocity);
+    
+    KE = 0.5 * body.Mass * (velocity_length .^2);
 end
 
 % Calculates the Gravitational Potential Energy between two stars
 function PE = calculatePE(i, bodyA, bodyB, G)
     r = calculateDistanceBetweenBodies(i, bodyA, bodyB);
     r_length = norm(r);
+
     PE = (-G .* bodyA.Mass .* bodyB.Mass) ./ r_length;
 end
 
