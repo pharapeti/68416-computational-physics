@@ -91,52 +91,69 @@ final_time_index = length(simulation.TimeSeries) - 1;
 
 % Compare total energy of system at first timestep to the total energy of
 % the system at the final timestep
-initial_energy = totalEnergyOfSimulationAtI(1, simulation);
-final_energy = totalEnergyOfSimulationAtI(final_time_index, simulation);
-delta_E = abs(final_energy - initial_energy);
-
-% Find the relative error % between the two
-relative_error = delta_E ./ final_energy;
-disp(relative_error)
+% initial_energy = totalEnergyOfSimulationAtI(1, simulation);
+% final_energy = totalEnergyOfSimulationAtI(final_time_index, simulation);
+% delta_E = abs(final_energy - initial_energy);
+% 
+% % Find the relative error % between the two
+% relative_error = delta_E ./ final_energy;
 
 % Do this for a range of step sizes to prove that minimising the step size
 % also minimises the relative error
 
 %% Validate Results with final position of the Moon convergence
 
-% step_sizes = logspace(2, 5);
-% final_positions_of_moon = nan(length(step_sizes), 2);
-% 
-% for i = 1:length(step_sizes)
-%     % Setup simulation at a given timestep
-%     sim = Simulation(step_sizes(i), totalTime, G);
-%     sim.createBody(star1_mass, star1_initial_position, star1_initial_velocity, star1_initial_acceleration);
-%     sim.createBody(star2_mass, star2_initial_position, star2_initial_velocity, star2_initial_acceleration);
-% 
-%     % Solve system numerically
-%     solveSystemNumerically(sim);
-% 
-%     % Determine final position of the Moon
-%     final_pos_x = simulation.Bodies(2).Position.X(final_time_index);
-%     final_pos_y = simulation.Bodies(2).Position.Y(final_time_index);
-%     final_positions_of_moon(i, :) = [final_pos_x, final_pos_y];
-% end
-% 
-% % Plot Step size vs Final Position of Moon
-% figure(8)
-% loglog(step_sizes, final_positions_of_moon(:, 1));
-% title('Position X of Moon at end of simulation vs Step Size');
-% xlabel('Step Size (log)');
-% ylabel('Position of Moon X');
-% legend('Position of Moon X');
-% 
-% % Plot Step size vs Final Position of Moon
-% figure(9)
-% loglog(step_sizes, final_positions_of_moon(:, 2));
-% title('Position Y of Moon at end of simulation vs Step Size');
-% xlabel('Step Size (log)');
-% ylabel('Position of Moon Y');
-% legend('Position of Moon Y');
+step_sizes = logspace(1, 5);
+final_positions_of_moon = nan(length(step_sizes), 2);
+relative_error_list = nan(length(step_sizes));
+
+for i = 1:length(step_sizes)    
+    % Setup simulation at a given timestep
+    sim = Simulation(step_sizes(i), totalTime, G);
+    sim.createBody(star1_mass, star1_initial_position, ...
+        star1_initial_velocity, star1_initial_acceleration);
+    sim.createBody(star2_mass, star2_initial_position, ...
+        star2_initial_velocity, star2_initial_acceleration);
+
+    % Solve system numerically
+    solveSystemNumerically(sim);
+
+    % Determine final position of the Moon
+    final_pos_x = simulation.Bodies(2).Position.X(final_time_index);
+    final_pos_y = simulation.Bodies(2).Position.Y(final_time_index);
+    final_positions_of_moon(i, :) = [final_pos_x, final_pos_y];
+
+    % Determine initial and final total energy of system
+    initial_energy = totalEnergyOfSimulationAtI(1, simulation);
+    final_energy = totalEnergyOfSimulationAtI(final_time_index, simulation);
+    delta_E = abs(final_energy - initial_energy);
+
+    % Store the relative error % between the two
+    relative_error_list(i) = delta_E ./ final_energy;
+end
+
+% Plot Step size vs Final Position of Moon
+figure(8)
+plot(step_sizes, final_positions_of_moon(:, 1));
+title('Position X of Moon at end of simulation vs Step Size');
+xlabel('Step Size (log)');
+ylabel('Position of Moon X');
+legend('Position of Moon X');
+
+% Plot Step size vs Final Position of Moon
+figure(9)
+plot(step_sizes, final_positions_of_moon(:, 2));
+title('Position Y of Moon at end of simulation vs Step Size');
+xlabel('Step Size (log)');
+ylabel('Position of Moon Y');
+legend('Position of Moon Y');
+
+figure(10)
+plot(step_sizes, relative_error_list);
+title('Relative Error vs Step Size');
+xlabel('Step Size (log)');
+ylabel('Relative Error');
+legend('Relative Error');
 
 %% Functions
 

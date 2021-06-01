@@ -19,6 +19,7 @@ stableGrid = nan([length(x_series), length(y_series)]);
 final_index = length(x_series) - 1;
 
 for i = 1:length(x_series)
+    disp(i)
     for j = 1:length(y_series)
 
         % Create Simulation
@@ -92,33 +93,33 @@ ylabel('Y')
 
 %% Visualise System
 
-% figure('NumberTitle', 'off', 'Name', 'Trajectory of Star 1, 2 and Satellite');
-% plot(simulation.Bodies(1).Position.X, simulation.Bodies(1).Position.Y, 'r', ...
-%      simulation.Bodies(2).Position.X, simulation.Bodies(2).Position.Y, 'b', ...
-%      simulation.Bodies(3).Position.X, simulation.Bodies(3).Position.Y, 'g', ...
-%      simulation.Barycenter.X, simulation.Barycenter.Y, '-')
-% title('Trajectory of Star 1, 2 and Satellite');
-% xlabel('Position X');
-% ylabel('Position Y');
-% legend('Star 1', 'Star 2', 'Satellite', 'Barycenter');
-% 
-% figure('NumberTitle', 'off', 'Name', 'Trajectory of Star 1');
-% plot(simulation.Bodies(1).Position.X, simulation.Bodies(1).Position.Y);
-% title('Tragectory of Star 1');
-% xlabel('Position X');
-% ylabel('Position Y');
-% 
-% figure('NumberTitle', 'off', 'Name', 'Trajectory of Star 2');
-% plot(simulation.Bodies(2).Position.X, simulation.Bodies(2).Position.Y);
-% title('Tragectory of Star 2');
-% xlabel('Position X');
-% ylabel('Position Y');
-% 
-% figure('NumberTitle', 'off', 'Name', 'Trajectory of Satellite');
-% plot(simulation.Bodies(3).Position.X, simulation.Bodies(3).Position.Y);
-% title('Tragectory of Satellite');
-% xlabel('Position X');
-% ylabel('Position Y');
+figure('NumberTitle', 'off', 'Name', 'Trajectory of Star 1, 2 and Satellite');
+plot(simulation.Bodies(1).Position.X, simulation.Bodies(1).Position.Y, 'r', ...
+     simulation.Bodies(2).Position.X, simulation.Bodies(2).Position.Y, 'b', ...
+     simulation.Bodies(3).Position.X, simulation.Bodies(3).Position.Y, 'g', ...
+     simulation.Barycenter.X, simulation.Barycenter.Y, '-')
+title('Trajectory of Star 1, 2 and Satellite');
+xlabel('Position X');
+ylabel('Position Y');
+legend('Star 1', 'Star 2', 'Satellite', 'Barycenter');
+
+figure('NumberTitle', 'off', 'Name', 'Trajectory of Star 1');
+plot(simulation.Bodies(1).Position.X, simulation.Bodies(1).Position.Y);
+title('Tragectory of Star 1');
+xlabel('Position X');
+ylabel('Position Y');
+
+figure('NumberTitle', 'off', 'Name', 'Trajectory of Star 2');
+plot(simulation.Bodies(2).Position.X, simulation.Bodies(2).Position.Y);
+title('Tragectory of Star 2');
+xlabel('Position X');
+ylabel('Position Y');
+
+figure('NumberTitle', 'off', 'Name', 'Trajectory of Satellite');
+plot(simulation.Bodies(3).Position.X, simulation.Bodies(3).Position.Y);
+title('Tragectory of Satellite');
+xlabel('Position X');
+ylabel('Position Y');
 
 %% Functions
 

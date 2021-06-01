@@ -49,61 +49,61 @@ solveSystemNumerically(simulation);
 
 %% Velocity Experimentation
 
-% velocitySeries = 0:50:2000;
-% finalDistance = nan(length(velocitySeries), 1);
-% final_time_index = length(velocitySeries) - 1;
+velocitySeries = 0:50:2000;
+finalDistance = nan(length(velocitySeries), 1);
+final_time_index = length(velocitySeries) - 1;
+
+for i = 1:length(velocitySeries) - 1
+
+    % Create Simulation
+    simulation = Simulation(timestep, totalTime, G);
+
+    % Create Earth
+    earth_mass = 5.97219 * 10.^24; % mass (kg)
+
+    % Earth's COM -> Barycenter = 4675km
+    earth_initial_position = [-4675 * 10.^3, 0]; % position (m)
+
+    % Earth orbit's the Earth-Moon Barycenter at 45km/h = 12.5m/s
+    earth_initial_velocity = [0, 12.5]; % velocity (m/s)
+    earth_initial_acceleration = [0, 0]; % acceleration (m/s/s)
+    simulation.createBody(earth_mass, earth_initial_position, ...
+        earth_initial_velocity, earth_initial_acceleration);
+
+    % Create Moon
+    moon_mass = 7.34767309 * 10.^22; % mass (kg)
+    moon_initial_position = [384400 * 10.^3, 0]; % position (m)
+    
+    orbital_velocity = 1.022 * 10.^3;
+    velocity_x = orbital_velocity .* sqrt(3) ./ 2;
+    velocity_y = orbital_velocity .* 0.5;
+    
+    moon_initial_velocity = [velocity_x, velocity_y]; % velocity (m/s)
+    moon_initial_acceleration = [0, 0]; % acceleration (m/s/s)
+    simulation.createBody(moon_mass, moon_initial_position, ...
+        moon_initial_velocity, moon_initial_acceleration);
+
+    % Create Satellite in L4
+    L4_position = [1.9138e+08, 3.3567e+08];
+    satellite_mass = 1; % mass (kg)
+    satellite_initial_position = L4_position; % position (m)
+    satellite_initial_velocity = [0, 1.022 * 10.^3]; % velocity (m/s)
+    satellite_initial_acceleration = [0, 0]; % acceleration (m/s/s)
+    simulation.createBody(satellite_mass, satellite_initial_position, ...
+        satellite_initial_velocity, satellite_initial_acceleration);
+
+    solveSystemNumerically(simulation);
+    
+    % Calculate distance of satellite to earth
+    d_sat_earth = calculateDistanceBetweenBodies(final_time_index, simulation.Bodies(1), simulation.Bodies(3));
+    finalDistance(i) = norm(d_sat_earth);
+end
 % 
-% for i = 1:length(velocitySeries) - 1
-% 
-%     % Create Simulation
-%     simulation = Simulation(timestep, totalTime, G);
-% 
-%     % Create Earth
-%     earth_mass = 5.97219 * 10.^24; % mass (kg)
-% 
-%     % Earth's COM -> Barycenter = 4675km
-%     earth_initial_position = [-4675 * 10.^3, 0]; % position (m)
-% 
-%     % Earth orbit's the Earth-Moon Barycenter at 45km/h = 12.5m/s
-%     earth_initial_velocity = [0, 12.5]; % velocity (m/s)
-%     earth_initial_acceleration = [0, 0]; % acceleration (m/s/s)
-%     simulation.createBody(earth_mass, earth_initial_position, ...
-%         earth_initial_velocity, earth_initial_acceleration);
-% 
-%     % Create Moon
-%     moon_mass = 7.34767309 * 10.^22; % mass (kg)
-%     moon_initial_position = [384400 * 10.^3, 0]; % position (m)
-%     
-%     orbital_velocity = 1.022 * 10.^3;
-%     velocity_x = orbital_velocity .* sqrt(3) ./ 2;
-%     velocity_y = orbital_velocity .* 0.5;
-%     
-%     moon_initial_velocity = [velocity_x, velocity_y]; % velocity (m/s)
-%     moon_initial_acceleration = [0, 0]; % acceleration (m/s/s)
-%     simulation.createBody(moon_mass, moon_initial_position, ...
-%         moon_initial_velocity, moon_initial_acceleration);
-% 
-%     % Create Satellite in L4
-%     L4_position = [1.9138e+08, 3.3567e+08];
-%     satellite_mass = 1; % mass (kg)
-%     satellite_initial_position = L4_position; % position (m)
-%     satellite_initial_velocity = [0, 1.022 * 10.^3]; % velocity (m/s)
-%     satellite_initial_acceleration = [0, 0]; % acceleration (m/s/s)
-%     simulation.createBody(satellite_mass, satellite_initial_position, ...
-%         satellite_initial_velocity, satellite_initial_acceleration);
-% 
-%     solveSystemNumerically(simulation);
-%     
-%     % Calculate distance of satellite to earth
-%     d_sat_earth = calculateDistanceBetweenBodies(final_time_index, simulation.Bodies(1), simulation.Bodies(3));
-%     finalDistance(i) = norm(d_sat_earth);
-% end
-% % 
-% % figure(1)
-% plot(velocitySeries ./ 1000, finalDistance);
-% title('Distance from Earth after 1 year')
-% xlabel('Velocity (m/s)')
-% ylabel('Distance from Earth after 1 year (km/s)')
+% figure(1)
+plot(velocitySeries ./ 1000, finalDistance);
+title('Distance from Earth after 1 year')
+xlabel('Velocity (m/s)')
+ylabel('Distance from Earth after 1 year (km/s)')
 
 %% Visualise System
 
